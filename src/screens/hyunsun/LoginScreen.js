@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   TextInput,
@@ -13,6 +13,22 @@ import { AntDesign, Ionicons, MaterialIcons } from '@expo/vector-icons';
 const LoginScreen = ({ navigation }) => {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
+
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        const token = await AsyncStorage.getItem('accessToken');
+        if (token) {
+          // console.log('저장된 토큰 있음, 자동 로그인');
+          navigation.replace('Home'); // 로그인 화면 건너뛰기
+        }
+      } catch (error) {
+        console.error('토큰 확인 오류:', error);
+      }
+    };
+
+    checkLoginStatus();
+  }, []);
 
   const handleLogin = async () => {
     if (!id || !password) {

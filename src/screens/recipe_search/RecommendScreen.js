@@ -10,6 +10,7 @@ import { StatusBar } from 'expo-status-bar'
 import { AntDesign } from '@expo/vector-icons';
 import { ChevronLeftIcon } from 'react-native-heroicons/outline';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Item = ({ title, author, time, recipe}) => (
   <ScrollView
@@ -62,8 +63,9 @@ export default function RecommendScreen() {
 
     const testSearchFromAI = async () => {
 
-      const url = `http://43.200.200.161:8080/recipes/searchFromAI`;
-      const token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI4IiwiaWF0IjoxNzU0MTE3MDg5LCJleHAiOjE3NTQxMjA2ODl9.zz75cNG0Pu6tmslbi6BTTktUhK7v3qtxhfSQZD_4ew";
+      const url = `http://43.200.200.161:8080/api/searchFromAI`;
+      const token = await AsyncStorage.getItem('accessToken');
+      console.log('불러온 토큰:', token);
 
       const requestData = {
         mainIngredients: {
@@ -83,6 +85,7 @@ export default function RecommendScreen() {
         const response = await axios.post(url, requestData, {
           headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
             'Authorization': `Bearer ${token}`
           }
         });
