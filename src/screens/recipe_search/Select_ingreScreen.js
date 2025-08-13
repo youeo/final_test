@@ -7,18 +7,20 @@ import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import { ChevronLeftIcon } from 'react-native-heroicons/outline';
 import AntDesign from '@expo/vector-icons/AntDesign';
+import { getAuthToken } from '../../AuthService';
 
-const CATEGORIES = ['전체', '육류', '수산물', '채소', '과일', '유제품', '가공식품'];
-//제가 적당히 넣었는데 재료를 하나하나 다 넣을지 고민하셔서 약간만 추가했습니다.
-
-const INGREDIENTS = {
-  육류: ['소고기', '돼지고기', '닭', '양고기'],
-  수산물: ['연어', '고등어', '참치', '새우'],
-  채소: ['상추', '양파', '당근'],
-  과일: ['사과', '바나나'],
-  유제품: ['우유', '치즈'],
-  가공식품: ['김치', '햄']
+const POPULAR_INGREDIENTS = {
+  '육류': ['돼지고기', '닭고기', '소고기', '오리고기', '양고기'],
+  '해산물': ['오징어', '새우', '고등어', '갈치', '연어', '멸치', '조개', '게', '문어'],
+  '채소': ['양파', '마늘', '대파', '감자', '당근', '고추', '깻잎', '상추', '시금치', '버섯', '오이', '토마토', '배추', '무', '애호박', '양배추'],
+  '과일': ['사과', '바나나', '딸기', '레몬', '오렌지', '포도', '수박'],
+  '향신료': ['설탕', '소금', '후추', '고춧가루', '참기름', '간장', '된장', '고추장'],
+  '축산물(유제품포함)': ['계란', '우유', '치즈', '버터', '생크림', '요거트'],
+  '가공식품': ['베이컨', '소시지', '햄', '참치캔', '두부', '김치', '식빵', '라면', '어묵']
 };
+
+const CATEGORIES = ['전체', '육류', '해산물', '채소', '과일', '향신료', '축산물(유제품포함)', '가공식품'];
+
 
 export default function Select_ingreScreen() {
 
@@ -27,14 +29,55 @@ export default function Select_ingreScreen() {
     const allCategories = Object.values(CATEGORIES).flat()
     const [meals, setMeals] = useState([]);
 
+    const [selectedIngredients, setSelectedIngredients] = useState([]);
+    const [searchResults, setSearchResults] = useState([]);
+    const [loading, setLoading] = useState(false);
+
     const [selectedCategory, setSelectedCategory] = useState('전체');
     const [search, setSearch] = useState('');
-    const [selectedIngredients, setSelectedIngredients] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [customInput, setCustomInput] = useState('');
-    const allIngredients = selectedCategory === '전체'
-      ? Object.values(INGREDIENTS).flat()
-      : INGREDIENTS[selectedCategory] || [];
+
+    const handleSearch = async () => {
+      if (!search.trim()) {
+        setSearchResults([]);
+        return;
+      }
+      setLoading(true);
+      setSearchResults([]);
+      try {
+        const token = await getAuthToken();
+        const response = await axios.get(`${API_BASE_URL}/api/searchIngredients`, {
+          params: { ingredient: search },
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setSearchResults(response.data);
+        console.log(response.data);
+      } catch (error) {
+        console.error('Failed to search ingredients:', error);
+        Alert.alert('오류', '재료 검색에 실패했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // 냉장고 재료 필터링
+    const myIngredientsByCategory = selectedCategory === '전체'
+      ? searchResults.map(i => i.ingredientName)
+      : searchResults
+          .filter(i => i.type === selectedCategory)
+          .map(i => i.ingredientName);
+
+    // 인기 재료 필터링
+    const popularIngredientsByCategory = selectedCategory === '전체'
+      ? Object.values(POPULAR_INGREDIENTS).flat()
+      : POPULAR_INGREDIENTS[selectedCategory] || [];
+
+    // 중복 제거
+    const allIngredients = [...new Set([
+      ...popularIngredientsByCategory,
+      ...myIngredientsByCategory
+    ])];
 
     const filtered_c = allCategories.filter(i => i.includes(search));
     const filtered_i = allIngredients.filter(i => i.includes(search));
@@ -60,6 +103,7 @@ export default function Select_ingreScreen() {
     useEffect(()=>{
         getCategories();
         getRecipes();
+        handleSearch();
       },[])
 
     const handleChangeCategory = category=>{
@@ -164,23 +208,33 @@ export default function Select_ingreScreen() {
           </View>
 
           {/* 재료 리스트 */}
-          <ScrollView contentContainerStyle={styles.ingredientsWrap}>
-            {filtered_i.map((item) => (
-              <TouchableOpacity
-                key={item}
-                onPress={() => addIngredient(item)}
-                style={styles.button}
-              >
-                <Text>{item}</Text>
-              </TouchableOpacity>
-            ))}
-            <TouchableOpacity
-              style={[styles.button, { backgroundColor: '#ddd' }]}
-              onPress={() => setModalVisible(true)}
+          <View style={{flex: 0.9}}>
+            <ScrollView
+              contentContainerStyle={{...styles.ingredientsWrap, flexGrow: 1}}
             >
-              <Text>+ 추가</Text>
-            </TouchableOpacity>
-          </ScrollView>
+              {filtered_i.map((item) => {
+                const isMine = searchResults.some(i => i.ingredientName === item);
+                return(
+                  <TouchableOpacity
+                    key={item}
+                    onPress={() => addIngredient(item)}
+                    style={styles.button}
+                  >
+                    <Text
+                      style={isMine ? { fontWeight: 'bold' } : {}}
+                    >
+                      {item}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+              <TouchableOpacity
+                style={[styles.button, { backgroundColor: '#ddd' }]}
+                onPress={() => setModalVisible(true)}
+              >
+                <Text>+ 추가</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
           
           {/* 선택된 재료 표시 */}
           <View style={styles.selectedBox}>

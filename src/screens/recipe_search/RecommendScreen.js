@@ -63,7 +63,7 @@ export default function RecommendScreen() {
 
     const testSearchFromAI = async () => {
 
-      const url = `http://43.200.200.161:8080/api/searchFromAI`;
+      const url = `http://43.200.200.161:8080/recipe/searchFromAI`;
       const token = await AsyncStorage.getItem('accessToken');
       console.log('불러온 토큰:', token);
 
