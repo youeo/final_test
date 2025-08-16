@@ -9,6 +9,8 @@ import { ChevronLeftIcon } from 'react-native-heroicons/outline';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { getAuthToken } from '../../AuthService';
 
+// 주석은 잠시 구분을 위해 남겨두겠습니다...
+
 const API_BASE_URL = 'http://43.200.200.161:8080';
 
 const POPULAR_INGREDIENTS = {
@@ -78,7 +80,7 @@ export default function Select_ingreScreen() {
     }
   };
 
-  // 🔎 검색 결과/인기 재료 모두에 카테고리 필터 적용
+  // 검색 결과 및 인기 재료 필터링
   const applyCategoryFilter = (names) => {
     if (selectedCategory === '전체') return names;
     const typeMap = new Map(searchResults.map((r) => [r.name, r.type]));
@@ -125,7 +127,6 @@ export default function Select_ingreScreen() {
   };
 
   useEffect(()=>{
-    // 내 냉장고 재료 미리 로드해서 볼드 표시 기준으로 사용
     (async () => {
       try {
         let token = await getAuthToken();
@@ -150,7 +151,7 @@ export default function Select_ingreScreen() {
     <Animated.View entering={FadeInDown.delay(100).duration(600).springify().damping(12)} className="flex-1 space-y-4 flex-col">
       <StatusBar hidden={true} />
 
-      {/* 뒤로가기/완료 (디자인 유지) */}
+      {/* 뒤로가기 및 넘어가기 */}
       <Animated.View entering={FadeIn.delay(200).duration(1000)} className="w-full flex-row justify-between items-center pt-14">
         <TouchableOpacity onPress={()=> navigation.goBack()} className="p-2 rounded-full ml-5 bg-gr">
           <ChevronLeftIcon  strokeWidth={4.5} color="#fbbf24" />
@@ -164,7 +165,7 @@ export default function Select_ingreScreen() {
         <Text style={{fontSize: hp(3)}} className="font-bold text-neutral-600">재료 선택</Text>
       </View>
 
-      {/* search bar (디자인 유지) */}
+      {/* search bar */}
       <View style={{flex: 0.15}}>
         <View className="mx-4 flex-row item-center rounded-full bg-black/5 p-[6px]">
           <TextInput
@@ -188,7 +189,7 @@ export default function Select_ingreScreen() {
         )}
       </View>
 
-      {/* 카테고리 (디자인 유지) */}
+      {/* 카테고리 */}
       <View style={{flex: 0.1}}>
         <ScrollView
           horizontal
@@ -230,7 +231,6 @@ export default function Select_ingreScreen() {
           keyboardShouldPersistTaps="handled"
         >
           {filtered_i.map((item) => {
-              // 서버 결과(검색으로 걸러진 항목)이면 굵게 표시
               const isFromServer =
                     myFridgeNames.includes(item) ||
                     searchResults.some(r => (r.name || r.ingredientName) === item);

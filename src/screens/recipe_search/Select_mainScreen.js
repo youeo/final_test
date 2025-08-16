@@ -34,8 +34,41 @@ export default function Select_mainScreen() {
             <TouchableOpacity onPress={()=> navigation.goBack()} className="p-2 rounded-full ml-5 bg-gr">
                 <ChevronLeftIcon  strokeWidth={4.5} color="#fbbf24" />
             </TouchableOpacity>
-            <TouchableOpacity onPress={()=> navigation.navigate('Recommend')} className="p-2 rounded-full mr-5 bg-gr">
-                <Text style={{fontSize: hp(2)}} className='text-ye font-bold'>완료</Text>
+            {/* 재료 배열 넘겨주기 */}
+            <TouchableOpacity
+              onPress={() => {
+                // 1) 이름 목록 (문자/객체 혼용 안전 처리)
+                const names = (selectedIngredients || [])
+                  .map(i => (typeof i === 'string' ? i : i?.name))
+                  .filter(Boolean);
+
+                // 2) 메인/서브 분리 (메인은 현재 선택된 MainIngredient 기준)
+                const mainNames = names.filter(n => n === MainIngredient);          // 최대 1~2개라면 여기에 로직 확장
+                const subNames  = names.filter(n => n !== MainIngredient);
+
+                // 3) 서버가 기대하는 객체 형태로 정규화 {name, count, type}
+                const toObj = (n) => {
+                  const src = (selectedIngredients || []).find(i => (typeof i === 'object' && i?.name === n));
+                  return {
+                    name: n,
+                    count: src?.count ?? '',   // 없으면 빈 값
+                    type:  src?.type  ?? 0,    // 없으면 0 등 기본값
+                  };
+                };
+
+                const mainIngredients = mainNames.map(toObj);
+                const subIngredients  = subNames.map(toObj);
+
+                if (mainIngredients.length === 0 && subIngredients.length === 0) {
+                  // 아무것도 선택 안 했으면 이동 막기 (선택)
+                  return;
+                }
+
+                navigation.navigate('Recommend', { mainIngredients, subIngredients });
+              }}
+              className="p-2 rounded-full mr-5 bg-gr"
+            >
+              <Text style={{fontSize: hp(2)}} className='text-ye font-bold'>완료</Text>
             </TouchableOpacity>
         </Animated.View>
 
