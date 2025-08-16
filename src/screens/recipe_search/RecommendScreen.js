@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet, FlatList, ScrollView, Pressable, Image, TextInput } from 'react-native';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import MasonryList from '@react-native-seoul/masonry-list';
 import axios from 'axios';
 import Loading from './loading';

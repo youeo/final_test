@@ -12,10 +12,18 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 
 export default function Select_mainScreen() {
   const route = useRoute();
-  const { selectedIngredients } = route.params;
+  const { selectedIngredients } = route.params || { selectedIngredients: [] };
+  // 받아오는 부분 세팅
+  const ingredientNames = (selectedIngredients || []).map(i => typeof i === 'string' ? i : i?.name).filter(Boolean);
+  const [MainIngredient, setMainIngredient] = useState('♥');
 
   const navigation = useNavigation();
-  const [MainIngredient, setMainIngredient] = useState('♥');
+
+  useEffect(() => {
+    if (!MainIngredient && ingredientNames.length > 0) {
+      setMainIngredient(ingredientNames[0]);
+    }
+  }, [ingredientNames]);
 
   return (
     <Animated.View entering={FadeInDown.delay(100).duration(600).springify().damping(12)} className="flex-1 space-y-4 flex-col">
@@ -34,14 +42,10 @@ export default function Select_mainScreen() {
         {/* 재료 리스트 */}
         <View style={{flex: 0.3}} className="mx-10">
           <ScrollView contentContainerStyle={styles.ingredientsWrap}>
-            {selectedIngredients.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              onPress={() => setMainIngredient(item)}
-              style={styles.ingredientButton}
-            >
-              <Text>{item}</Text>
-            </TouchableOpacity>
+            {ingredientNames.map((name, index) => (
+              <TouchableOpacity key={index} onPress={() => setMainIngredient(name)} style={styles.ingredientButton}>
+                <Text>{name}</Text>
+              </TouchableOpacity>
             ))}
           </ScrollView>
         </View>
@@ -49,7 +53,7 @@ export default function Select_mainScreen() {
         {/* 메인 재료 보여주기 */}
         <View className="mx-10 items-center justify-center" style={{flex: 0.2}}>
           <View className="mb-10 items-center justify-center" style={[styles.selectedBox, {backgroundColor: '#d9d9d9',}]}>
-            <Text className="px-4 font-semibold" style={{ fontSize: 40, color: 'black', textAlign: 'center'}}>{MainIngredient}</Text>
+            <Text className="px-4 font-semibold" style={{ fontSize: 40, color: 'black', textAlign: 'center'}}>{MainIngredient || '♥'}</Text>
           </View>
         </View>
 
