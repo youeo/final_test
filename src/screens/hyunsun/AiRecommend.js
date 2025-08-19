@@ -4,26 +4,17 @@ import { useNavigation } from '@react-navigation/native';
 import { ChevronLeftIcon } from 'react-native-heroicons/outline';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import axios from 'axios';
 
-export default function AiRecommendScreen() {
+export default function AiRecommend() {
   const navigation = useNavigation();
   const [meals, setMeals] = useState([]);
 
   useEffect(() => {
-    getRecommendedRecipes();
+    fetch('http://43.200.200.161:8080/recipes/Recipetoday')
+      .then(res => res.json())
+      .then(data => setMeals(data))
+      .catch(err => console.error(err));
   }, []);
-
-  const getRecommendedRecipes = async () => {
-    try {
-      const response = await axios.get('https://themealdb.com/api/json/v1/1/search.php?s=');
-      if (response?.data?.meals) {
-        setMeals(response.data.meals.slice(0, 5)); // 최대 5개
-      }
-    } catch (err) {
-      console.log('Error fetching recipes: ', err.message);
-    }
-  };
 
   const numColumns = 2;
   const imageSize = (Dimensions.get('window').width - wp(12)) / 2;
@@ -31,7 +22,7 @@ export default function AiRecommendScreen() {
   return (
     <View className="flex-1 bg-white">
       <StatusBar hidden={true} />
-      
+
       {/* 뒤로가기 버튼 */}
       <TouchableOpacity
         onPress={() => navigation.goBack()}
@@ -45,24 +36,22 @@ export default function AiRecommendScreen() {
         contentContainerStyle={{ paddingTop: hp(12), paddingBottom: hp(5), paddingHorizontal: wp(5) }}
       >
         <Animated.View entering={FadeInDown.delay(100).duration(600).springify().damping(12)}>
-          {/* 제목 */}
           <Text style={{ fontSize: hp(2.3) }} className="font-semibold text-neutral-700 text-center mb-4">
             오늘의 추천 레시피
           </Text>
 
-          {/* 레시피 이미지 목록 */}
           <FlatList
             data={meals}
             numColumns={numColumns}
-            keyExtractor={(item) => item.idMeal}
-            scrollEnabled={false}
+            keyExtractor={(item, index) => index.toString()}
+            scrollEnabled={false}  // ScrollView 안에서 스크롤 안 겹치도록
             columnWrapperStyle={{ justifyContent: 'space-between', marginBottom: hp(2) }}
             renderItem={({ item }) => (
               <TouchableOpacity
-                onPress={() => navigation.navigate('RecipeDetail', { ...item })}
+                onPress={() => navigation.navigate('RecipeDetail', { recipe: item })}
               >
                 <Image
-                  source={{ uri: item.strMealThumb }}
+                  source={{ uri: item.image }} // 서버에서 받은 이미지 필드 이름에 맞게 변경
                   style={{
                     width: imageSize,
                     height: hp(25),
@@ -71,6 +60,9 @@ export default function AiRecommendScreen() {
                   }}
                   resizeMode="cover"
                 />
+                <Text style={{ width: imageSize, textAlign: 'center', marginTop: 4 }} numberOfLines={1}>
+                  {item.title} {/* 서버 데이터에 맞춰 title 필드 사용 */}
+                </Text>
               </TouchableOpacity>
             )}
           />
