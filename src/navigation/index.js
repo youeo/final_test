@@ -9,6 +9,10 @@ import RecipeDetailScreen from '../screens/RecipeDetailScreen';
 import LoginScreen from '../screens/hyunsun/LoginScreen';
 import SignupScreen from '../screens/hyunsun/SignupScreen';
 
+// 추천 화면들
+import AiRecommend from '../screens/hyunsun/AiRecommend';
+import TodaysIngredient from '../screens/hyunsun/TodaysIngredient';
+
 // 프로필 관련 화면들
 import ProfileScreen from '../screens/profile/ProfileScreen';
 import SelectAllergyScreen from '../screens/profile/SelectAllergyScreen';
@@ -40,6 +44,10 @@ function AppNavigation() {
         <Stack.Screen name="RecipeDetail" component={RecipeDetailScreen} />
         <Stack.Screen name="LoginScreen" component={LoginScreen} />
         <Stack.Screen name="SignupScreen" component={SignupScreen} />
+
+        {/* 추천화면 */}
+        <Stack.Screen name="AiRecommend" component={AiRecommend} />
+        <Stack.Screen name="TodaysIngredient" component={TodaysIngredient} />
         
         {/* 프로필 화면 */}
         <Stack.Screen name="Profile" component={ProfileScreen} />
