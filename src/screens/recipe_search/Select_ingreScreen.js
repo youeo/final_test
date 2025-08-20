@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, TouchableOpacity, TextInput, Modal, ScrollView,
 import { StatusBar } from 'expo-status-bar';
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import axios from 'axios';
 import { ChevronLeftIcon } from 'react-native-heroicons/outline';
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -26,6 +26,9 @@ const POPULAR_INGREDIENTS = {
 const CATEGORIES = ['전체', '육류', '해산물', '채소', '과일', '향신료', '축산물(유제품포함)', '가공식품'];
 
 export default function Select_ingreScreen() {
+
+  const route = useRoute();
+  const { Type = 0 } = route.params || {};
 
   const navigation = useNavigation();
   const [activeCategory, setActiveCategory] = useState('전체');
@@ -156,7 +159,7 @@ export default function Select_ingreScreen() {
         <TouchableOpacity onPress={()=> navigation.goBack()} className="p-2 rounded-full ml-5 bg-gr">
           <ChevronLeftIcon  strokeWidth={4.5} color="#fbbf24" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={()=> navigation.navigate('Select_main', {selectedIngredients})} className="p-2 rounded-full mr-5 bg-gr">
+        <TouchableOpacity onPress={()=> navigation.navigate('Select_main', {selectedIngredients, Type,})} className="p-2 rounded-full mr-5 bg-gr">
           <Text style={{fontSize: hp(2)}} className='text-ye font-bold'>완료</Text>
         </TouchableOpacity>
       </Animated.View>

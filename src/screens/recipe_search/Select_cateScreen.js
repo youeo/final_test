@@ -30,7 +30,7 @@ export default function Select_cateScreen() {
             <View style={{flex: 0.7}} className="pt-4 mt-5 flex-row mx-4 space-x-4 justify-center items-start">
                 <Pressable
                     className="flex justify-center mb-4 space-y-1"
-                    onPress={()=> navigation.navigate('Select_ingre')}
+                    onPress={()=> navigation.navigate('Select_ingre', {Type: 1})}
                 >
                 <View style={{height: 180,  width: 180}} className="bg-gr rounded-3xl flex-col justify-center items-center">
                     <Text style={{fontSize: hp(2.8)}} className="font-semibold text-ye pb-3">식사용</Text>
@@ -39,7 +39,7 @@ export default function Select_cateScreen() {
                 </Pressable>
                 <Pressable
                     className="flex justify-center mb-4 space-y-1"
-                    onPress={()=> navigation.navigate('Select_ingre')}
+                    onPress={()=> navigation.navigate('Select_ingre', {Type: 2})}
                 >
                 <View style={{height: 180,  width: 180}} className="bg-gr rounded-3xl flex-col justify-center items-center">
                     <Text style={{fontSize: hp(2.8)}} className="font-semibold text-ye pb-3">디저트용</Text>

@@ -12,7 +12,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 
 export default function Select_mainScreen() {
   const route = useRoute();
-  const { selectedIngredients } = route.params || { selectedIngredients: [] };
+  const { selectedIngredients = [], Type = 0 } = route.params || {};
   // 받아오는 부분 세팅
   const ingredientNames = (selectedIngredients || []).map(i => typeof i === 'string' ? i : i?.name).filter(Boolean);
   const [MainIngredient, setMainIngredient] = useState('♥');
@@ -29,8 +29,8 @@ export default function Select_mainScreen() {
     <Animated.View entering={FadeInDown.delay(100).duration(600).springify().damping(12)} className="flex-1 space-y-4 flex-col">
         <StatusBar hidden={true} />
 
-        {/* 뒤로가기 */}
         <Animated.View entering={FadeIn.delay(200).duration(1000)} className="w-full flex-row justify-between items-center pt-14">
+            {/* 뒤로가기 */}
             <TouchableOpacity onPress={()=> navigation.goBack()} className="p-2 rounded-full ml-5 bg-gr">
                 <ChevronLeftIcon  strokeWidth={4.5} color="#fbbf24" />
             </TouchableOpacity>
@@ -64,7 +64,7 @@ export default function Select_mainScreen() {
                   return;
                 }
 
-                navigation.navigate('Recommend', { mainIngredients, subIngredients });
+                navigation.navigate('Recommend', { mainIngredients, subIngredients, Type, });
               }}
               className="p-2 rounded-full mr-5 bg-gr"
             >

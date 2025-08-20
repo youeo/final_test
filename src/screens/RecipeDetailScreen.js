@@ -1,10 +1,9 @@
 import { View, Text, Image, ScrollView, TouchableOpacity, Alert } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { StatusBar } from 'expo-status-bar';
-import { CachedImage } from '../helpers/image';
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import { ChevronLeftIcon, ClockIcon, FireIcon } from 'react-native-heroicons/outline';
-import {  HeartIcon, Square3Stack3DIcon, UsersIcon } from 'react-native-heroicons/solid';
+import {  HeartIcon } from 'react-native-heroicons/solid';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import Loading from '../components/loading';
@@ -13,6 +12,26 @@ import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { getAuthToken } from '../AuthService';
 
 const API_BASE_URL = 'http://43.200.200.161:8080';
+
+const buildLikeBody = (meal, currentUser, route) => {
+  const code = Number(meal?.code ?? 0) || 0;
+  const Type = Number(meal?.type ?? route?.params?.Type ?? 0) || 0;
+  const Tool = Number(currentUser?.tools ?? currentUser?.tool ?? meal?.tools ?? 0) || 0;
+
+  return {
+    code,
+    name: meal?.name ?? '',
+    time: meal?.time ?? '',
+    recipe: Array.isArray(meal?.recipe) ? meal.recipe : [],
+    mainIngredients: Array.isArray(meal?.mainIngredients) ? meal.mainIngredients : [],
+    subIngredients: Array.isArray(meal?.subIngredients) ? meal.subIngredients : [],
+    ingredients: Array.isArray(meal?.ingredients) ? meal.ingredients : [],
+    thumbnail: meal?.thumbnail ?? '',
+    Type,
+    Tool,
+    author: meal?.author ?? ''
+  };
+};
 
 export default function RecipeDetailScreen(props) {
   const recipe = props.route.params?.recipe;
@@ -59,20 +78,13 @@ export default function RecipeDetailScreen(props) {
     return Number.isFinite(n) && n > 0 ? n : 0;
   };
 
+  // toggleLike 교체 (code=0도 허용하여 등록 가능, 성공 시 반환된 code로 업데이트)
   const toggleLike = async () => {
     if (!meal || liking) return;
-
-    // ✅ 올바른 유효성 검사 (없음이면 에러)
-    const recipeCode = getRecipeCode(meal);
-    if (recipeCode) {
-      Alert.alert('오류', '레시피 코드가 유효하지 않습니다.');
-      return;
-    }
 
     try {
       setLiking(true);
 
-      // 토큰 확보 및 접두어 보정
       let tokenRaw = await getAuthToken();
       if (!tokenRaw) {
         Alert.alert('로그인 필요', '이 기능을 사용하려면 로그인하세요.');
@@ -81,38 +93,40 @@ export default function RecipeDetailScreen(props) {
       const auth = /^Bearer\s/i.test(tokenRaw) ? tokenRaw : `Bearer ${tokenRaw}`;
       const headers = { Authorization: auth, 'Content-Type': 'application/json', Accept: 'application/json' };
 
-      // 참고: 이 호출이 200이면 인증 자체는 정상. 여기서 401/403이면 토큰 문제.
+      // 사용자 정보(도구 코드 등 보정용)
+      let currentUser = null;
       try {
         const me = await axios.get(`${API_BASE_URL}/api/me`, { headers, timeout: 10000 });
-        console.log('[me] ok', me.status);
-      } catch (e) {
-        console.log('[me] fail', e?.response?.status, e?.response?.data);
-      }
+        currentUser = me?.data ?? null;
+      } catch {}
 
       if (!isFavourite) {
-        // 서버는 @RequestBody Recipe 를 기대 -> 최소 필드 포함한 Recipe 형태로 보냄
-        const body = {
-          code: recipeCode,
-          name: meal?.name ?? '',
-          time: meal?.time ?? '',
-          author: meal?.author ?? '',
-          recipe: Array.isArray(meal?.recipe) ? meal.recipe : [],
-          ingredients: Array.isArray(meal?.ingredients) ? meal.ingredients : [],
-          thumbnail: meal?.thumbnail ?? ''
-        };
-
+        // 등록: code=0 허용, 서버가 매핑해서 실제 code 부여
+        const body = buildLikeBody(meal, currentUser, props.route);
+        console.log('[like][body]', JSON.stringify(body));
         const res = await axios.post(`${API_BASE_URL}/api/recipes/like`, body, { headers, timeout: 15000 });
-        console.log('[like][post] ok', res.status);
+
+        // 컨트롤러가 ResponseEntity<Integer> 반환 → 부여된 recipeCode(또는 1)일 수 있음
+        const newCode = Number(res?.data);
+        if (Number.isFinite(newCode) && newCode > 0) {
+          // 성공적으로 코드가 발급됐다면 로컬 상태에 반영
+          setMeal(prev => ({ ...(prev || {}), code: newCode }));
+        }
         setIsFavourite(true);
       } else {
-        // 해제 API가 DELETE /api/recipes/like?recipeCode=... 인 경우
-        const res = await axios.delete(`${API_BASE_URL}/api/recipes/like`, {
-          params: { recipeCode },
-          headers,
-          timeout: 15000
-        });
-        console.log('[like][delete] ok', res.status);
-        setIsFavourite(false);
+        // 해제: code가 있어야 DELETE 가능
+        const recipeCode = Number(meal?.code ?? 0) || 0;
+        if (recipeCode > 0) {
+          await axios.delete(`${API_BASE_URL}/api/recipes/like`, {
+            params: { recipeCode },
+            headers,
+            timeout: 15000
+          });
+          setIsFavourite(false);
+        } else {
+          // 아직 서버 코드가 없으면(=0) 해제는 불가 → 먼저 좋아요 등록해서 코드 발급 필요
+          Alert.alert('안내', '서버에 등록된 코드가 없어 취소할 수 없어요. 먼저 찜 등록을 완료해 주세요.');
+        }
       }
     } catch (err) {
       const s = err?.response?.status;
@@ -120,27 +134,12 @@ export default function RecipeDetailScreen(props) {
         ? err.response.data
         : JSON.stringify(err?.response?.data ?? {});
       console.log('[like] error:', s, d);
-
-      // 403이면 대부분 보안 정책/권한 매칭 문제
-      if (s === 403) {
-        Alert.alert(
-          '오류(403)',
-          [
-            '요청이 거부되었습니다.',
-            '• Authorization 헤더가 "Bearer ..." 형식인지',
-            '• 경로가 /api/recipes/like 인지(클래스 @RequestMapping 기준 확인)',
-            '• Spring Security에서 POST/DELETE /api/recipes/like 가 authenticated/ROLE_USER 허용인지',
-          ].join('\n')
-        );
-      } else if (s === 401) {
-        Alert.alert('오류(401)', '로그인이 필요합니다. 다시 로그인해 주세요.');
-      } else {
-        Alert.alert('오류', `status=${s ?? 'N/A'}\n${d && d !== '{}' ? d : '요청 처리 중 문제가 발생했습니다.'}`);
-      }
+      Alert.alert('오류', s ? `status=${s}\n${d}` : '요청 처리 중 문제가 발생했습니다.');
     } finally {
       setLiking(false);
     }
   };
+
 
   // 테스트 중 ---------------------------------------------------------------
 

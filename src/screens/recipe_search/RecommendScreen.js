@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, TextInput, ActivityIndicator, Alert } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, TextInput, ActivityIndicator, Alert} from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import axios from 'axios';
 import { StatusBar } from 'expo-status-bar';
-import { AntDesign } from '@expo/vector-icons';
 import { ChevronLeftIcon } from 'react-native-heroicons/outline';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { getAuthToken } from '../../AuthService';
 import LoadingScreen from './LoadingScreen';
+import { Ionicons } from '@expo/vector-icons';
 
 const API_BASE_URL = 'http://43.200.200.161:8080';
 
@@ -52,7 +52,8 @@ const Item = ({ recipe, onPress }) => (
 export default function RecommendScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { mainIngredients, subIngredients } = route.params || {};
+  const { mainIngredients, subIngredients, Type = 0 } = route.params || {};
+  const typeCode = Number(Type) || 0;
 
   const [activeTab, setActiveTab] = useState('possible');
 
@@ -60,8 +61,14 @@ export default function RecommendScreen() {
   const [isLoading, setIsLoading] = useState(true); // 초기 화면 로딩
   const [isLoadingNeeds, setIsLoadingNeeds] = useState(false); // 추가 재료 탭 로딩
 
+  // 탭 구분용
   const [recipesPossible, setRecipesPossible] = useState([]);
   const [recipesNeeds, setRecipesNeeds] = useState([]);
+
+  // 정렬 구현용
+  const [sortOpen, setSortOpen] = useState(false);
+  const [sortKey, setSortKey] = useState('alpha'); // '가나다순' | '조리시간순'
+
 
   // 탭 분류
   const fetchRecipes = async (tab = 'possible') => {
@@ -90,7 +97,8 @@ export default function RecommendScreen() {
         mainIngredients: mainIngredients?.[0] || null,
         subIngredients: [...(mainIngredients?.slice(1) || []), ...(subIngredients || [])],
         Banned: currentUser.banned,
-        Tool: currentUser.tools
+        Tool: currentUser.tools,
+        Type: typeCode,
       };
 
       const endpoint = tab === 'possible'
@@ -105,7 +113,10 @@ export default function RecommendScreen() {
         .filter(r => !!(r?.recipe?.[0] && String(r.recipe[0]).trim()))
         .slice(0, 3);
 
-      if (tab === 'possible') setRecipesPossible(cleaned);
+      if (tab === 'possible') {
+        setRecipesPossible(cleaned);
+        // console.log(Type);
+      }
       else setRecipesNeeds(cleaned);
     } catch (error) {
       console.log('[searchFromAI]', tab, error?.response?.status, error?.response?.data);
@@ -117,6 +128,27 @@ export default function RecommendScreen() {
     }
   };
 
+  // 정렬 구현용
+  const sortRecipes = (list) => {
+    if (!Array.isArray(list)) return [];
+
+    // 조리시간 짧은순
+    if (sortKey === 'time') {
+      return [...list].sort((a, b) => {
+      const parseMinutes = (timeStr) => {
+        if (!timeStr) return Infinity;
+        const match = String(timeStr).match(/\d+/); // "약 30분" → 30
+        return match ? parseInt(match[0], 10) : Infinity;
+      };
+      return parseMinutes(a?.time) - parseMinutes(b?.time);
+     });
+    }
+    
+    // 가나다순 (기본)
+    return [...list].sort((a, b) =>
+      (a?.name || '').localeCompare(b?.name || '', 'ko-KR')
+    );
+  };
 
   // 기본 호출
   useEffect(() => {
@@ -175,20 +207,63 @@ export default function RecommendScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* 정렬 버튼 */}
+        <View style={{alignItems: 'flex-end', paddingHorizontal: wp(4), paddingVertical: 6, marginTop: 10 }}>
+          <TouchableOpacity style={{flexDirection: 'row' }} onPress={() => setSortOpen(true)}>
+            <Text style={{ marginRight: 3, color: '#6b7280' }}>
+              정렬: {sortKey === 'alpha' ? '가나다순' : '조리시간순'}
+            </Text>
+            <Ionicons style={{ marginTop: 2}} name="swap-vertical" size={16} color="#666" />
+          </TouchableOpacity>
+        </View>
+
+        {/* 정렬 모달 */}
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={sortOpen}
+          onRequestClose={() => setSortOpen(false)}
+        >
+          <TouchableOpacity 
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => setSortOpen(false)}
+          >
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>정렬 기준 선택</Text>
+              <TouchableOpacity 
+                style={[styles.sortOption, sortKey === 'alpha' && styles.selectedSortOption]}
+                onPress={() => { setSortKey('alpha'); setSortOpen(false); }}
+              >
+                <Text style={[styles.sortOptionText, sortKey === 'alpha' && styles.selectedSortOptionText]}>가나다순</Text>
+                {sortKey === 'alpha' && <Ionicons name="checkmark" size={20} color="#007AFF" />}
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.sortOption, sortKey === 'time' && styles.selectedSortOption]}
+                onPress={() => { setSortKey('time'); setSortOpen(false); }}
+              >
+                <Text style={[styles.sortOptionText, sortKey === 'time' && styles.selectedSortOptionText]}>조리시간순</Text>
+                {sortKey === 'time' && <Ionicons name="checkmark" size={20} color="#007AFF" />}
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </Modal>
+
         {/* 본문 */}
         <View style={{ flex: 1 }}>
           <ScrollView>
             {recipes.length > 0 ? (
-              recipes
-                .filter(r => !!(r?.recipe?.[0] && String(r.recipe[0]).trim()))
+              sortRecipes(
+                recipes.filter(r => !!(r?.recipe?.[0] && String(r.recipe[0]).trim()))
+              )
                 .slice(0, 3)
                 .map((item, index) => (
                   <Item
-                    key={index}
+                    key={`${item?.code ?? 'c0'}-${item?.name ?? index}`}
                     recipe={item}
                     onPress={() => navigation.navigate('RecipeDetail', { recipe: item })}
                   />
-                ))
+              ))
             ) : (
               // 로딩 종류 분할
               activeTab === 'needs' && isLoadingNeeds ? (
@@ -245,5 +320,44 @@ const styles = StyleSheet.create({
   activeTabText: {
     color: '#111827',
     fontWeight: '600' 
+  },
+  modalOverlay: {
+    flex: 1, 
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+    justifyContent: 'center', 
+    alignItems: 'center' 
+  },
+  modalContent: { 
+    width: '80%', 
+    backgroundColor: 'white', 
+    borderRadius: 12, 
+    padding: 20, 
+    elevation: 5 
+  },
+  modalTitle: { 
+    fontSize: 18, 
+    fontWeight: 'bold', 
+    marginBottom: 16, 
+    textAlign: 'center' 
+  },
+  sortOption: {
+    flexDirection: 'row',
+    alignItems: 'center', 
+    justifyContent: 'space-between', 
+    paddingVertical: 16, 
+    paddingHorizontal: 12, 
+    borderRadius: 8, 
+    marginBottom: 8 
+  },
+  selectedSortOption: {
+    backgroundColor: '#f0f8ff'
+  },
+  sortOptionText: {
+    fontSize: 16, 
+    color: '#333' 
+  },
+  selectedSortOptionText: {
+    color: '#007AFF', 
+    fontWeight: '500' 
   },
 });
