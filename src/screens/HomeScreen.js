@@ -10,58 +10,44 @@ import Recipes from '../components/recipes';
 import Todaysfood from '../components/Todaysfood';
 
 export default function HomeScreen() {
-  const [activeCategory, setActiveCategory] = useState('Beef');
-  const [categories, setCategories] = useState([]);
+
   const [meals, setMeals] = useState([]);
   const navigation = useNavigation();
   const [ingredient, setIngredient] = useState(null);
 
-useEffect(() => {
-  // 오늘의 추천 레시피 5개 불러오기
-  fetch('http://43.200.200.161:8080/recipes/Recipetoday')
-    .then(res => res.json())
-    .then(data => setMeals(data))
-    .catch(err => console.error(err));
-
-  // 오늘의 식재료 상식 1개 불러오기
-  fetch('http://43.200.200.161:8080/recipes/Ingredienttoday')
-    .then(res => res.json())
-    .then(data => setIngredient(data))
-    .catch(err => console.error(err));
-}, []);
+  async function safeFetchJson(url) {
+    const res = await fetch(url);
+    if (!res.ok) {
+      // 진짜 JSON일 수도 있으니 우선 text로 읽고 로깅
+      const t = await res.text().catch(() => '');
+      console.warn('[fetch not ok]', res.status, t);
+      return null;
+    }
+    const text = await res.text();        // 먼저 text로 받기
+    if (!text) return null;               // 빈 본문이면 null 반환
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      console.warn('[json parse fail]', e, text.slice(0, 120));
+      return null;
+    }
+  }
 
   useEffect(() => {
-    getCategories();
-    getRecipes();
+    (async () => {
+      try {
+        const mealsData = await safeFetchJson('http://43.200.200.161:8080/api/recipes/Recipetoday');
+        setMeals(Array.isArray(mealsData) ? mealsData : []);
+
+        const ingData = await safeFetchJson('http://43.200.200.161:8080/api/recipes/Ingredienttoday');
+        setIngredient(ingData || null);
+      } catch (err) {
+        console.error('[home fetch error]', err);
+        setMeals([]);
+        setIngredient(null);
+      }
+    })();
   }, []);
-
-  const handleChangeCategory = category => {
-    getRecipes(category);
-    setActiveCategory(category);
-    setMeals([]);
-  }
-
-  const getCategories = async () => {
-    try {
-      const response = await axios.get('https://themealdb.com/api/json/v1/1/categories.php');
-      if (response && response.data) {
-        setCategories(response.data.categories);
-      }
-    } catch (err) {
-      console.log('error: ', err.message);
-    }
-  }
-
-  const getRecipes = async (category = "Beef") => {
-    try {
-      const response = await axios.get(`https://themealdb.com/api/json/v1/1/filter.php?c=${category}`);
-      if (response && response.data) {
-        setMeals(response.data.meals);
-      }
-    } catch (err) {
-      console.log('error: ', err.message);
-    }
-  }
 
   return (
     <View className="flex-1 bg-white">
@@ -112,64 +98,62 @@ useEffect(() => {
         </Animated.View>
 
         {/* 오늘의 추천 레시피 */}
-<View className="-mt-10 mx-4 space-y-3">
-  <View className="flex-row justify-between items-center pt-2 pb-2 bg-ye rounded-xl px-4">
-    <Text style={{ fontSize: hp(2) }} className="font-semibold text-gr"> 오늘의 추천 레시피 </Text>
-    <TouchableOpacity onPress={() => navigation.navigate('AiRecommend')}>
-      <Text className="text-gr font-semibold"> ≫ </Text>
-    </TouchableOpacity>
-  </View>
+        <View className="-mt-10 mx-4 space-y-3">
+          <View className="flex-row justify-between items-center pt-2 pb-2 bg-ye rounded-xl px-4">
+            <Text style={{ fontSize: hp(2) }} className="font-semibold text-gr"> 오늘의 추천 레시피 </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('AiRecommend')}>
+              <Text className="text-gr font-semibold"> ≫ </Text>
+            </TouchableOpacity>
+          </View>
 
-  {/* 추천 레시피 카드 */}
-  <FlatList
-    data={meals}   // 서버에서 가져온 5개 레시피
-    keyExtractor={(item, index) => index.toString()}
-    horizontal
-    showsHorizontalScrollIndicator={false}
-    renderItem={({ item }) => (
-      <TouchableOpacity 
-        className="mr-3"
-        onPress={() => navigation.navigate('RecipeDetail', { recipe: item })}
-      >
-        <Image
-          source={{ uri: item.image }} // 서버에서 받은 레시피 이미지
-          className="w-32 h-32 rounded-xl"
-        />
-        <Text className="text-center mt-2" numberOfLines={1}>
-          {item.title}
-        </Text>
-      </TouchableOpacity>
-    )}
-  />
-</View>
+          {/* 추천 레시피 카드 */}
+          <FlatList
+            data={meals}   // 서버에서 가져온 5개 레시피
+            keyExtractor={(item, index) => index.toString()}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            renderItem={({ item }) => (
+              <TouchableOpacity 
+                className="mr-3"
+                onPress={() => navigation.navigate('RecipeDetail', { recipe: item })}
+              >
+                <Image
+                  source={{ uri: item.image }} // 서버에서 받은 레시피 이미지
+                  className="w-32 h-32 rounded-xl"
+                />
+                <Text className="text-center mt-2" numberOfLines={1}>
+                  {item.title}
+                </Text>
+              </TouchableOpacity>
+            )}
+          />
+        </View>
 
-{/* 오늘의 식재료 상식 */}
-<View className="-mt-10 mx-4 space-y-3">
-  <View className="flex-row justify-between items-center pt-2 pb-2 bg-ye rounded-xl px-4">
-    <Text style={{ fontSize: hp(2) }} className="font-semibold text-gr">오늘의 식재료 상식</Text>
-    <TouchableOpacity onPress={() => navigation.navigate('TodaysIngredient')}>
-      <Text className="text-gr font-semibold"> ≫ </Text>
-    </TouchableOpacity>
-  </View>
+        {/* 오늘의 식재료 상식 */}
+        <View className="-mt-10 mx-4 space-y-3">
+          <View className="flex-row justify-between items-center pt-2 pb-2 bg-ye rounded-xl px-4">
+            <Text style={{ fontSize: hp(2) }} className="font-semibold text-gr">오늘의 식재료 상식</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('TodaysIngredient')}>
+              <Text className="text-gr font-semibold"> ≫ </Text>
+            </TouchableOpacity>
+          </View>
 
-  {/* 미리보기 카드 */}
-  {ingredient && (
-    <TouchableOpacity 
-      className="items-center"
-      onPress={() => navigation.navigate('TodaysIngredient')}
-    >
-      <Image
-        source={{ uri: ingredient.image }} // 서버에서 받은 식재료 이미지
-        className="w-40 h-40 rounded-xl"
-      />
-      <Text className="text-center mt-2" numberOfLines={1}>
-        {ingredient.name}
-      </Text>
-    </TouchableOpacity>
-  )}
-</View>
-
-
+          {/* 미리보기 카드 */}
+          {ingredient && (
+            <TouchableOpacity 
+              className="items-center"
+              onPress={() => navigation.navigate('TodaysIngredient')}
+            >
+              <Image
+                source={{ uri: ingredient.image }} // 서버에서 받은 식재료 이미지
+                className="w-40 h-40 rounded-xl"
+              />
+              <Text className="text-center mt-2" numberOfLines={1}>
+                {ingredient.name}
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </ScrollView>
     </View>
   )

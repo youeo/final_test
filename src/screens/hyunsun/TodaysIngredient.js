@@ -10,7 +10,7 @@ export default function TodaysIngredientScreen() {
   const [ingredient, setIngredient] = useState(null);
 
   useEffect(() => {
-    fetch('http://43.200.200.161:8080/Ingredienttoday')
+    fetch('http://43.200.200.161:8080/api/recipes/Ingredienttoday')
       .then(res => res.json())
       .then(data => setIngredient(data))
       .catch(err => console.error(err));
