@@ -24,18 +24,10 @@ const Item = ({ recipe, onPress }) => (
       style={{ flex: 1, flexDirection: 'row', backgroundColor: '#f3f4f6', borderWidth: 1, borderColor: '#e5e7eb' }}
       className="space-x-2 rounded-2xl px-3 py-3"
     >
-      <View style={{ flex: 0.3, justifyContent: 'center' }}>
-        {/* 만약 이미지 넣기가 어려우면 없애고 글만 내보내도 될 것 같습니다 */}
-        <Image
-          source={require('../../../assets/images/placeholder.jpg')}
-          style={{ width: 80, height: 80 }}
-          className="rounded-full"
-        />
-      </View>
-      <View style={{ flex: 0.7 }} className="space-y-2">
+      <View style={{ flex: 1 }} className="space-y-2">
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <Text className="font-semibold text-lg flex-1" numberOfLines={1}>{recipe.name}</Text>
-          <View style={{ backgroundColor: '#fbbf24', borderRadius: 9999, paddingHorizontal: 10, paddingVertical: 4 }}>
+          <View style={{ backgroundColor: '#fbbf24',borderRadius: 9999, paddingHorizontal: 10, paddingVertical: 4, marginLeft: 'auto' }}>
             <Text className="text-xs text-white font-semibold">{recipe.time}</Text>
           </View>
         </View>
@@ -208,10 +200,10 @@ export default function RecommendScreen() {
         </View>
 
         {/* 정렬 버튼 */}
-        <View style={{alignItems: 'flex-end', paddingHorizontal: wp(4), paddingVertical: 6, marginTop: 10 }}>
-          <TouchableOpacity style={{flexDirection: 'row' }} onPress={() => setSortOpen(true)}>
+        <View style={{alignItems: 'flex-start', paddingHorizontal: wp(4), paddingVertical: 6, marginTop: 10 }}>
+          <TouchableOpacity style={{backgroundColor: '#f3f4f6', flexDirection: 'row', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 20 }} onPress={() => setSortOpen(true)}>
             <Text style={{ marginRight: 3, color: '#6b7280' }}>
-              정렬: {sortKey === 'alpha' ? '가나다순' : '조리시간순'}
+              {sortKey === 'alpha' ? '가나다순' : '조리시간순'}
             </Text>
             <Ionicons style={{ marginTop: 2}} name="swap-vertical" size={16} color="#666" />
           </TouchableOpacity>
@@ -321,18 +313,17 @@ const styles = StyleSheet.create({
     color: '#111827',
     fontWeight: '600' 
   },
-  modalOverlay: {
+  modalOverlay: { 
     flex: 1, 
     backgroundColor: 'rgba(0, 0, 0, 0.5)', 
-    justifyContent: 'center', 
-    alignItems: 'center' 
+    justifyContent: 'flex-end' 
   },
   modalContent: { 
-    width: '80%', 
     backgroundColor: 'white', 
-    borderRadius: 12, 
+    borderTopLeftRadius: 20, 
+    borderTopRightRadius: 20,
     padding: 20, 
-    elevation: 5 
+    paddingBottom: 40 
   },
   modalTitle: { 
     fontSize: 18, 

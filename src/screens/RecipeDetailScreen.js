@@ -14,6 +14,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const API_BASE_URL = 'http://43.200.200.161:8080';
 
+const TOOLS_BIT_MAP = {
+  '프라이팬': 1, '냄비': 2, '웍': 4, '밀대': 8, '믹서기': 16, '핸드블랜더': 32, '거품기': 64,
+  '연육기': 128, '착즙기': 256, '전자레인지': 512, '가스레인지': 1024, '오븐': 2048,
+  '에어프라이어': 4096, '주전자': 8192, '압력솥': 16384, '토스터': 32768, '찜기': 65536
+};
+
 const buildLikeBody = (meal, currentUser, route) => {
   const code = Number(meal?.code ?? 0) || 0;
   const type = Number(meal?.type ?? route?.params?.Type ?? 0) || 0;
@@ -278,23 +284,48 @@ export default function RecipeDetailScreen(props) {
     }
   };
 
+  // 구분선 구현용
+  const Divider = () => (
+    <View
+      style={{
+        borderBottomColor: '#fbbf24',   // Tailwind amber-400
+        borderBottomWidth: 1.5,           // 두께
+        marginVertical: 12,
+      }}
+    >
+      <View
+        style={{
+          borderBottomColor: '#fbbf24',
+          borderBottomWidth: 2,       // 두 번째 선
+          marginTop: 2,                 // 위 선과 간격
+        }}
+      />
+    </View>
+  );
+
   return (
     <ScrollView className="bg-white flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 30 }}>
       <StatusBar style={"light"} />
 
       <View className="flex-row justify-center">
-        <Image
-          source={imageSource}
-          style={{ width: wp(98), height: hp(50), borderRadius: 53, borderBottomLeftRadius: 40, borderBottomRightRadius: 40, marginTop: 4 }}
-          resizeMode="cover"
+        <View
+          style={{
+            width: wp(98),
+            height: hp(10),
+            borderRadius: 53,
+            borderBottomLeftRadius: 40,
+            borderBottomRightRadius: 40,
+            marginTop: 4,
+            backgroundColor: '#ffffff' // 연한 회색 (빈칸 티나게)
+          }}
         />
       </View>
 
       <Animated.View entering={FadeIn.delay(200).duration(1000)} className="w-full absolute flex-row justify-between items-center pt-14">
-        <TouchableOpacity onPress={() => navigation.goBack()} className="p-2 rounded-full ml-5 bg-white">
+        <TouchableOpacity onPress={() => navigation.goBack()} className="p-2 rounded-full ml-5 bg-gr">
           <ChevronLeftIcon size={hp(3.5)} strokeWidth={4.5} color="#fbbf24" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={toggleLike} disabled={liking} className="p-2 rounded-full mr-5 bg-white">
+        <TouchableOpacity onPress={toggleLike} disabled={liking} className="p-2 rounded-full mr-5 bg-gr">
           <HeartIcon size={hp(3.5)} strokeWidth={4.5} color={isFavourite ? "red" : "gray"} />
         </TouchableOpacity>
       </Animated.View>
@@ -303,10 +334,15 @@ export default function RecipeDetailScreen(props) {
         <Loading size="large" className="mt-16" />
       ) : (
         <View className="px-4 flex justify-between space-y-4 pt-8">
-          <Animated.View entering={FadeInDown.duration(700).springify().damping(12)} className="space-y-2">
+
+          {/* 이름 */}
+          <Animated.View entering={FadeInDown.duration(700).springify().damping(12)}
+            className="space-y-2"
+          >
             <Text style={{ fontSize: hp(3) }} className="font-bold flex-1 text-neutral-700">
               {meal?.name ?? '이름 없는 레시피'}
             </Text>
+            <Divider />
             {!!meal?.author && (
               <Text style={{ fontSize: hp(2) }} className="font-medium flex-1 text-neutral-500">
                 by {meal.author}
@@ -314,35 +350,135 @@ export default function RecipeDetailScreen(props) {
             )}
           </Animated.View>
 
-          <Animated.View entering={FadeInDown.delay(100).duration(700).springify().damping(12)} className="flex-row justify-center items-center">
+          {/* 시간 */}
+          <Animated.View entering={FadeInDown.delay(100).duration(700).springify().damping(12)}
+            style={{ marginTop: 10 }}
+          >
+            <Text style={{fontSize: hp(2.2), fontWeight: '700', color: '#374151', marginBottom: 8 }}>
+              Time
+            </Text>
             <View
-              style={{ backgroundColor: '#fbbf24', borderRadius: 9999, paddingVertical: 16, paddingHorizontal: 20, minWidth: wp(25), alignItems: 'center', justifyContent: 'center' }}
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'flex-start',
+                alignItems: 'flex-start',
+                flexWrap: 'wrap',
+                gap: 8
+              }}
             >
-              <View style={{ height: hp(6.5), width: hp(6.5), borderRadius: 9999, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
-                <ClockIcon size={hp(4)} strokeWidth={2.5} color="#525252" />
+              <View
+                style={{
+                  backgroundColor: '#fbbf24',
+                  borderRadius: 9999,
+                  paddingVertical: 6,
+                  paddingHorizontal: 12,
+                  borderWidth: 1,
+                  borderColor: '#e5e7eb'
+                }}
+              >
+                <Text style={{ color: '#374151', fontWeight: '600' }}>
+                  ⏱ {meal?.time || 'N/A'}
+                </Text>
               </View>
-              <Text style={{ fontSize: hp(2), fontWeight: 'bold', color: '#111827', textAlign: 'center', flexWrap: 'wrap' }}>
-                {meal?.time}
-              </Text>
-              <Text style={{ fontSize: hp(1.3), fontWeight: '600', color: '#111827', marginTop: 4, textAlign: 'center' }}>
-                Time
-              </Text>
             </View>
           </Animated.View>
 
-          {Array.isArray(meal?.ingredients) && meal.ingredients.length > 0 && (
-            <Animated.View entering={FadeInDown.delay(200).duration(700).springify().damping(12)} className="space-y-4">
-              <Text style={{ fontSize: hp(2.5) }} className="font-bold flex-1 text-neutral-700">Ingredients</Text>
-              <View className="space-y-2 ml-3">
-                {meal.ingredients.map((ing, idx) => (
-                  <View key={`${ing.name ?? 'ing'}-${idx}`} className="flex-row space-x-4">
-                    <View style={{ height: hp(1.5), width: hp(1.5) }} className="bg-amber-300 rounded-full" />
-                    <View className="flex-row space-x-2">
-                      {!!ing.count && (
-                        <Text style={{ fontSize: hp(1.7) }} className="font-extrabold text-neutral-700">{ing.count}</Text>
-                      )}
-                      <Text style={{ fontSize: hp(1.7) }} className="font-medium text-neutral-600">{ing.name}</Text>
-                    </View>
+          {/* 도구 */}
+          <Animated.View
+            entering={FadeInDown.delay(120).duration(700).springify().damping(12)}
+            style={{ marginTop: 10 }}
+          >
+            <Text style={{fontSize: hp(2.2), fontWeight: '700', color: '#374151', marginBottom: 8 }}>
+              Tools
+            </Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'flex-start',
+                alignItems: 'flex-start',
+                flexWrap: 'wrap',
+                gap: 8
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: '#fff7ed',
+                  borderRadius: 9999,
+                  paddingVertical: 6,
+                  paddingHorizontal: 12,
+                  borderWidth: 1,
+                  borderColor: '#fed7aa'
+                }}
+              >
+                <Text style={{ color: '#9a3412', fontWeight: '600' }}>
+                  {TOOLS_BIT_MAP[meal?.tools] ?? "없음"}
+                </Text>
+              </View>
+            </View>
+          </Animated.View>
+
+          {/* 재료 */}
+          {Array.isArray(meal?.mainIngredients) && meal.mainIngredients.length > 0 && (
+            <Animated.View
+              entering={FadeInDown.delay(160).duration(700).springify().damping(12)}
+              style={{ marginTop: 16 }}
+            >
+              <Text style={{ fontSize: hp(2.2), fontWeight: '700', color: '#374151', marginBottom: 8 }}>
+                Ingredients
+              </Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                {meal.mainIngredients.map((ing, idx) => (
+                  <View
+                    key={`main-${idx}`}
+                    style={{
+                      backgroundColor: '#fff7ed',
+                      borderColor: '#fed7aa',
+                      borderWidth: 1,
+                      borderRadius: 9999,
+                      paddingVertical: 6,
+                      paddingHorizontal: 10,
+                      marginRight: 8,
+                      marginBottom: 8
+                    }}
+                  >
+                    <Text style={{ color: '#9a3412', fontWeight: '600' }}>
+                      {(ing?.name ?? '').toString()}
+                      {ing?.count ? ` ${ing.count}` : ''}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </Animated.View>
+          )}
+
+          {/* 서브 재료 (있으면 뜸) */}
+          {Array.isArray(meal?.subIngredients) && meal.subIngredients.length > 0 && (
+            <Animated.View
+              entering={FadeInDown.delay(180).duration(700).springify().damping(12)}
+              style={{ marginTop: 8 }}
+            >
+              <Text style={{ fontSize: hp(2.2), fontWeight: '700', color: '#374151', marginBottom: 8 }}>
+                Sub Ingredients
+              </Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                {meal.subIngredients.map((ing, idx) => (
+                  <View
+                    key={`sub-${idx}`}
+                    style={{
+                      backgroundColor: '#eef2ff',
+                      borderColor: '#c7d2fe',
+                      borderWidth: 1,
+                      borderRadius: 9999,
+                      paddingVertical: 6,
+                      paddingHorizontal: 10,
+                      marginRight: 8,
+                      marginBottom: 8
+                    }}
+                  >
+                    <Text style={{ color: '#3730a3', fontWeight: '600' }}>
+                      {(ing?.name ?? '').toString()}
+                      {ing?.count ? ` ${ing.count}` : ''}
+                    </Text>
                   </View>
                 ))}
               </View>
@@ -351,6 +487,7 @@ export default function RecipeDetailScreen(props) {
 
           {!!meal?.recipe?.length && (
             <Animated.View entering={FadeInDown.delay(300).duration(700).springify().damping(12)} className="space-y-4">
+              <Divider />
               <Text style={{ fontSize: hp(2.5) }} className="font-bold flex-1 text-neutral-700">Instructions</Text>
               <View className="space-y-2">
                 {meal.recipe.map((step, idx) => (

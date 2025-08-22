@@ -3,7 +3,8 @@ import { View, Text, TouchableOpacity, TextInput, ScrollView, StyleSheet, Alert,
 import axios from 'axios';
 import { getAuthToken } from '../../AuthService';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import { ChevronLeftIcon, XMarkIcon } from 'react-native-heroicons/outline';
+import { ChevronLeftIcon } from 'react-native-heroicons/outline';
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 const API_BASE_URL = 'http://43.200.200.161:8080';
 
@@ -12,7 +13,13 @@ const TOOLS_BIT_MAP = {
   '연육기': 128, '착즙기': 256, '전자레인지': 512, '가스레인지': 1024, '오븐': 2048,
   '에어프라이어': 4096, '주전자': 8192, '압력솥': 16384, '토스터': 32768, '찜기': 65536
 };
-const ALL_TOOLS = Object.keys(TOOLS_BIT_MAP);
+
+const POPULAR_TOOLS = {
+    '기본도구': ['프라이팬', '냄비', '웍', '전자레인지', '가스레인지', '주전자'],
+    '가열도구': ['오븐', '에어프라이어', '압력솥', '토스터', '찜기'],
+    '보조도구': ['밀대', '믹서기', '핸드블랜더', '거품기', '연육기', '착즙기'],
+};
+const CATEGORIES = ['전체', '기본도구', '가열도구', '보조도구'];
 
 const getBitsFromToolList = (toolList) => {
   let bits = 0;
@@ -28,8 +35,7 @@ export default function SelectToolScreen({ route, navigation }) {
   const { userData } = route.params;
   const [selectedTools, setSelectedTools] = useState(userData.toolsList || []);
   const [search, setSearch] = useState('');
-
-  const filteredTools = ALL_TOOLS.filter(item => item.includes(search));
+  const [activeCategory, setActiveCategory] = useState('전체');
 
   const toggleTool = (item) => {
     if (selectedTools.includes(item)) {
@@ -58,78 +64,243 @@ export default function SelectToolScreen({ route, navigation }) {
     }
   };
 
+  const renderTools = () => {
+    let listToRender = [];
+    if (activeCategory === '전체') {
+      listToRender = Object.values(POPULAR_TOOLS).flat();
+    } else {
+      listToRender = POPULAR_TOOLS[activeCategory] || [];
+    }
+
+    const filteredList = listToRender.filter(item => item.includes(search));
+
+    return filteredList.map((item, index) => {
+        return (
+            <TouchableOpacity
+                key={index}
+                style={styles.itemButton}
+                onPress={() => toggleTool(item)}
+            >
+                <Text>{item}</Text>
+            </TouchableOpacity>
+        );
+    });
+  }
+
   return (
     <View style={styles.container}>
       <StatusBar hidden={true} />
+      
+      {/* --- 헤더 UI 수정 --- */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <ChevronLeftIcon size={hp(3.5)} strokeWidth={4.5} color="#333" />
+        <TouchableOpacity onPress={()=> navigation.goBack()} style={styles.headerButton}>
+          <ChevronLeftIcon  strokeWidth={4.5} color="#fbbf24" />
         </TouchableOpacity>
+        <TouchableOpacity onPress={handleSave} style={styles.headerButton}>
+          <Text style={{fontSize: hp(2), color: '#fbbf24', fontWeight: 'bold'}}>저장</Text>
+        </TouchableOpacity>
+      </View>
+      
+      <View style={styles.titleContainer}>
         <Text style={styles.title}>조리도구 선택</Text>
       </View>
 
-      <TextInput
-        placeholder="조리도구 검색"
-        value={search}
-        onChangeText={setSearch}
-        style={styles.searchInput}
-        placeholderTextColor="#888"
-      />
-      
-      {/* ## 카테고리 UI 제거 ## */}
-      <ScrollView contentContainerStyle={styles.itemsContainer}>
-        {filteredTools.map((item, index) => {
-            const isSelected = selectedTools.includes(item);
-            return (
-                <TouchableOpacity
-                    key={index}
-                    style={styles.itemButton}
-                    onPress={() => toggleTool(item)}
-                >
-                    <Text style={[ styles.itemButtonText, isSelected && styles.selectedItemButtonText ]}>
-                        {item}
-                    </Text>
-                </TouchableOpacity>
-            );
-        })}
-      </ScrollView>
+      {/* --- 검색창 UI 수정 --- */}
+      <View style={styles.searchWrapper}>
+        <View style={styles.searchBar}>
+          <TextInput
+            placeholder='조리도구 검색...'
+            placeholderTextColor={'gray'}
+            style={styles.searchInput}
+            value={search}
+            onChangeText={setSearch}
+            returnKeyType="search"
+          />
+          <View style={styles.searchIconContainer}>
+            <AntDesign name="search1" size={hp(2.5)} color="#ffab00"/>
+          </View>
+        </View>
+      </View>
 
-      <View style={styles.selectedItemsContainerWrapper}>
-        <Text style={styles.selectedItemsTitle}>나의 조리도구:</Text>
-        <ScrollView style={styles.selectedItemsScroll} contentContainerStyle={styles.selectedItemsList}>
-          {selectedTools.map(item => (
-            <TouchableOpacity key={item} style={styles.selectedItemChip} onPress={() => toggleTool(item)}>
-              <Text style={styles.selectedItemText}>{item}</Text>
-              <XMarkIcon size={hp(2)} color="white" />
-            </TouchableOpacity>
-          ))}
+      {/* --- 카테고리 UI 수정 --- */}
+      <View style={styles.categoryContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{paddingHorizontal: 15}}
+        >
+          {CATEGORIES.map((category)=>{
+            const isActive = category === activeCategory;
+            return (
+              <TouchableOpacity
+                key={category}
+                onPress={() => setActiveCategory(category)}
+                style={styles.categoryTouch}
+              >
+                <View style={[styles.categoryPill, isActive ? styles.activeCategoryPill : styles.inactiveCategoryPill]}>
+                  <Text style={styles.categoryText}>
+                    {category}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            )
+          })}
         </ScrollView>
       </View>
       
-      <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-        <Text style={styles.saveButtonText}>저장하기</Text>
-      </TouchableOpacity>
+      <View style={styles.listTitleContainer}>
+        <Text style={styles.listTitle}>{activeCategory}</Text>
+      </View>
+
+      {/* --- 목록 UI 수정 --- */}
+      <View style={styles.listContainer}>
+        <ScrollView
+          contentContainerStyle={styles.itemsContainer}
+          keyboardShouldPersistTaps="handled"
+        >
+          {renderTools()}
+        </ScrollView>
+      </View>
+
+      {/* --- 하단 선택 목록 UI 수정 --- */}
+      <View style={styles.selectedBox}>
+        <Text style={styles.selectedBoxTitle}>나의 조리도구</Text>
+        <ScrollView horizontal keyboardShouldPersistTaps="handled">
+          {selectedTools.map(item => (
+            <View key={item} style={styles.selectedChip}>
+              <Text>{item}</Text>
+              <TouchableOpacity onPress={() => toggleTool(item)} style={{marginLeft: 5}}>
+                <Text>✕</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </ScrollView>
+      </View>
     </View>
   );
 }
 
+// --- recipe_search 스타일에 맞게 대폭 수정 ---
 const styles = StyleSheet.create({
-    container: { flex: 1, paddingHorizontal: wp(5), paddingTop: hp(6), backgroundColor: '#fff' },
-    header: { flexDirection: 'row', alignItems: 'center', marginBottom: hp(3), },
-    backButton: { marginRight: wp(3), },
-    title: { fontSize: hp(3.5), fontWeight: 'bold', color: '#333' },
-    searchInput: { backgroundColor: '#f3f4f6', borderRadius: 8, paddingVertical: hp(1.5), paddingHorizontal: wp(4), fontSize: hp(2.2), marginBottom: hp(2) },
-    separator: { height: 1, backgroundColor: '#000000', marginBottom: hp(2) },
-    itemsContainer: { flexDirection: 'row', flexWrap: 'wrap', paddingBottom: hp(2), },
-    itemButton: { backgroundColor: '#f9fafb', paddingVertical: hp(1.5), paddingHorizontal: wp(4), borderRadius: 8, marginRight: wp(2), marginBottom: hp(1.5), },
-    itemButtonText: { fontSize: hp(2.2), color: '#6b7280' },
-    selectedItemButtonText: { color: '#1f2937', fontWeight: 'bold' },
-    selectedItemsContainerWrapper: { flex: 1, },
-    selectedItemsTitle: { fontSize: hp(2.5), fontWeight: 'bold', color: '#333', marginBottom: hp(1), },
-    selectedItemsScroll: { flex: 1, maxHeight: hp(25), },
-    selectedItemsList: { flexDirection: 'row', flexWrap: 'wrap', paddingBottom: hp(1), },
-    selectedItemChip: { backgroundColor: '#4b5563', borderRadius: 8, paddingVertical: hp(1), paddingHorizontal: wp(3), marginRight: wp(2), marginBottom: hp(1.5), flexDirection: 'row', alignItems: 'center', },
-    selectedItemText: { color: 'white', fontSize: hp(2.2), marginRight: 5, },
-    saveButton: { backgroundColor: '#374151', paddingVertical: hp(2), borderRadius: 8, alignItems: 'center', marginTop: 'auto', marginBottom: hp(3), },
-    saveButtonText: { color: 'white', fontSize: hp(2.5), fontWeight: 'bold' }
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
+    },
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingTop: hp(7),
+        paddingHorizontal: wp(5),
+    },
+    headerButton: {
+        backgroundColor: '#f3f4f6', // bg-gr 대체
+        padding: 10,
+        borderRadius: 999,
+    },
+    titleContainer: {
+        flex: 0.15,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: hp(2),
+    },
+    title: {
+        fontSize: hp(3),
+        fontWeight: 'bold',
+        color: '#4b5563', // text-neutral-600
+    },
+    searchWrapper: {
+        flex: 0.15,
+        paddingHorizontal: wp(4),
+        justifyContent: 'center',
+    },
+    searchBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderRadius: 999,
+        backgroundColor: 'rgba(0,0,0,0.05)',
+        padding: 6,
+    },
+    searchInput: {
+        flex: 1,
+        fontSize: hp(1.7),
+        paddingLeft: 12,
+    },
+    searchIconContainer: {
+        backgroundColor: 'white',
+        borderRadius: 999,
+        padding: 8,
+    },
+    categoryContainer: {
+        flex: 0.1,
+        justifyContent: 'center',
+    },
+    categoryTouch: {
+        alignItems: 'center',
+        marginHorizontal: 4,
+    },
+    categoryPill: {
+        borderRadius: 999,
+        padding: 8,
+    },
+    activeCategoryPill: {
+        backgroundColor: '#fbbf24', // amber-400
+    },
+    inactiveCategoryPill: {
+        backgroundColor: 'rgba(0,0,0,0.1)',
+    },
+    categoryText: {
+        fontWeight: '600',
+        color: '#4b5563', // text-neutral-600
+        marginHorizontal: 4,
+        fontSize: hp(1.6),
+    },
+    listTitleContainer: {
+        flex: 0.1,
+        paddingHorizontal: wp(5),
+        justifyContent: 'center',
+    },
+    listTitle: {
+        fontSize: hp(2),
+        fontWeight: 'bold',
+        color: '#4b5563', // text-neutral-600
+    },
+    listContainer: {
+        flex: 1,
+    },
+    itemsContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        paddingHorizontal: wp(4),
+        paddingBottom: 8,
+    },
+    itemButton: {
+        backgroundColor: '#d9d9d9',
+        padding: 10,
+        borderRadius: 20,
+        margin: 5,
+    },
+    selectedBox: {
+        backgroundColor: '#444',
+        padding: 15,
+        borderRadius: 20,
+        marginVertical: 10,
+        marginHorizontal: 12,
+    },
+    selectedBoxTitle: {
+        color: 'white',
+        marginBottom: 5,
+        textAlign: 'center',
+        fontWeight: 'bold',
+    },
+    selectedChip: {
+        backgroundColor: '#d9d9d9',
+        borderRadius: 20,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginRight: 10,
+        marginVertical: 5,
+    },
 });

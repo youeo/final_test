@@ -1,21 +1,13 @@
 import React from 'react';
 import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  SafeAreaView,
-  TouchableOpacity,
-  Image,
-  Alert,
+  View, Text, ScrollView, StyleSheet, SafeAreaView, TouchableOpacity, Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 const MyRecipeDetailScreen = ({ navigation, route }) => {
-  // ## 이전 화면에서 recipe 객체를 직접 받음 ##
-  const { recipe } = route.params;
+  const { recipe, isEditable } = route.params;
 
-  // recipe 객체가 없는 경우에 대한 예외 처리
   if (!recipe) {
     return (
       <SafeAreaView style={styles.container}>
@@ -26,73 +18,63 @@ const MyRecipeDetailScreen = ({ navigation, route }) => {
     );
   }
 
-  // mainIngredients와 subIngredients를 하나의 배열로 합침
-  const allIngredients = [
-      ...(recipe.mainIngredients || []), 
-      ...(recipe.subIngredients || [])
-  ];
+  // --- ## 재료 목록을 subIngredients만 사용하도록 수정 ## ---
+  const ingredientsToDisplay = recipe.subIngredients || [];
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
+      {/* --- ## 헤더 UI 수정 (공유 버튼 제거) ## --- */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.headerButton} onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
+          <Ionicons name="arrow-back" size={24} color="#fbbf24" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.headerButton} onPress={() => Alert.alert('공유', '공유 기능은 추후 구현 예정입니다.')}>
-          <Ionicons name="share-outline" size={24} color="#fff" />
-        </TouchableOpacity>
+        <Text style={styles.headerTitle}>레시피 상세</Text>
+        <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Recipe Image */}
-        <View style={styles.imageContainer}>
-          <Image 
-            // ## 이미지가 없을 경우를 대비한 임시 이미지 ##
-            source={{ uri: recipe.imageUrl || 'https://via.placeholder.com/400x250/FFC0CB/000000?text=My+Recipe' }}
-            style={styles.recipeImage}
-            resizeMode="cover"
-          />
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.contentContainer}>
+        {/* --- ## 전체적인 레이아웃 및 스타일 개선 ## --- */}
+        <View style={styles.titleSection}>
+            <Text style={styles.recipeName}>{recipe.name}</Text>
+            <View style={styles.metaInfo}>
+                <Ionicons name="time-outline" size={16} color="#6b7280" />
+                <Text style={styles.metaText}>{recipe.time || '정보 없음'}</Text>
+            </View>
         </View>
 
-        {/* Recipe Info */}
-        <View style={styles.contentContainer}>
-          <Text style={styles.recipeName}>{recipe.name}</Text>
-          <Text style={styles.recipeDescription}>
-            {recipe.time ? `조리시간: ${recipe.time}` : '맛있는 요리를 즐겨보세요!'}
-          </Text>
-
-          {/* '추가한 레시피'일 경우에만 수정 버튼 표시 (서버 author 필드 등으로 확인 필요) */}
-          {/* 현재는 임시로 항상 표시되게 함 */}
+        {isEditable && (
           <TouchableOpacity style={styles.editButton} onPress={() => navigation.navigate('EditRecipeScreen', { recipe })}>
-            <Ionicons name="create-outline" size={20} color="#007AFF" />
-            <Text style={styles.editButtonText}>수정하기</Text>
+              <Ionicons name="create-outline" size={18} color="#4b5563" />
+              <Text style={styles.editButtonText}>레시피 수정</Text>
           </TouchableOpacity>
+        )}
 
-          {/* Ingredients Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>재료</Text>
-            {allIngredients.map((ingredient, index) => (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>재료</Text>
+          {ingredientsToDisplay.length > 0 ? (
+            ingredientsToDisplay.map((ingredient, index) => (
               <View key={index} style={styles.ingredientItem}>
-                <View style={styles.bulletPoint} />
-                <Text style={styles.ingredientText}>
-                  {ingredient.name} {ingredient.count || ''}
-                </Text>
+                <Text style={styles.ingredientName}>{ingredient.name}</Text>
+                <Text style={styles.ingredientCount}>{ingredient.count || ''}</Text>
               </View>
-            ))}
-          </View>
+            ))
+          ) : (
+            <Text style={styles.noDataText}>추가 재료 정보가 없습니다.</Text>
+          )}
+        </View>
 
-          {/* Recipe Steps Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>레시피</Text>
-            {/* ## 서버에서 받은 recipe.recipe 필드는 이미 배열 ## */}
-            {recipe.recipe && recipe.recipe.map((step, index) => (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>조리 과정</Text>
+          {recipe.recipe && recipe.recipe.length > 0 ? (
+            recipe.recipe.map((step, index) => (
               <View key={index} style={styles.stepItem}>
-                <Text style={styles.stepNumber}>{index + 1}.</Text>
+                <Text style={styles.stepNumber}>{index + 1}</Text>
                 <Text style={styles.stepText}>{step}</Text>
               </View>
-            ))}
-          </View>
+            ))
+           ) : (
+            <Text style={styles.noDataText}>조리 과정 정보가 없습니다.</Text>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -101,25 +83,26 @@ const MyRecipeDetailScreen = ({ navigation, route }) => {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#fff' },
-    header: { position: 'absolute', top: 0, left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 50, paddingBottom: 16, zIndex: 1, backgroundColor: 'rgba(0,0,0,0.3)' },
-    headerButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' },
+    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: hp(7), paddingBottom: hp(2), backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
+    headerButton: { backgroundColor: '#f3f4f6', padding: 8, borderRadius: 999, width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+    headerTitle: { fontSize: hp(2.2), fontWeight: 'bold' },
     loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    scrollView: { flex: 1 },
-    imageContainer: { height: 250, backgroundColor: '#f0f0f0' },
-    recipeImage: { width: '100%', height: '100%' },
-    contentContainer: { padding: 20 },
-    recipeName: { fontSize: 24, fontWeight: 'bold', color: '#333', marginBottom: 8 },
-    recipeDescription: { fontSize: 16, color: '#666', marginBottom: 20, lineHeight: 22 },
-    editButton: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', paddingHorizontal: 16, paddingVertical: 8, backgroundColor: '#f0f8ff', borderRadius: 20, marginBottom: 24 },
-    editButtonText: { marginLeft: 6, fontSize: 16, color: '#007AFF', fontWeight: '500' },
+    contentContainer: { paddingHorizontal: 20, paddingBottom: 40 },
+    titleSection: { paddingVertical: 24 },
+    recipeName: { fontSize: 28, fontWeight: 'bold', color: '#111827', marginBottom: 12, lineHeight: 36 },
+    metaInfo: { flexDirection: 'row', alignItems: 'center' },
+    metaText: { marginLeft: 8, fontSize: 14, color: '#6b7280' },
+    editButton: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 16, backgroundColor: '#f3f4f6', borderRadius: 20, marginBottom: 32 },
+    editButtonText: { marginLeft: 8, fontSize: 14, color: '#4b5563', fontWeight: '600' },
     section: { marginBottom: 32 },
-    sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#333', marginBottom: 16 },
-    ingredientItem: { flexDirection: 'row', alignItems: 'center', marginBottom: 12, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
-    bulletPoint: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#333', marginRight: 12 },
-    ingredientText: { fontSize: 16, color: '#333', flex: 1 },
-    stepItem: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 16 },
-    stepNumber: { fontSize: 16, fontWeight: 'bold', color: '#007AFF', marginRight: 12, minWidth: 24 },
-    stepText: { fontSize: 16, color: '#333', flex: 1, lineHeight: 22 },
+    sectionTitle: { fontSize: 22, fontWeight: 'bold', color: '#111827', marginBottom: 16, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
+    ingredientItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f9fafb' },
+    ingredientName: { fontSize: 16, color: '#374151' },
+    ingredientCount: { fontSize: 16, color: '#6b7280' },
+    stepItem: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 20 },
+    stepNumber: { fontSize: 16, fontWeight: 'bold', color: '#fbbf24', marginRight: 12, width: 24, textAlign: 'right' },
+    stepText: { fontSize: 16, color: '#374151', flex: 1, lineHeight: 24 },
+    noDataText: { fontSize: 16, color: '#9ca3af', textAlign: 'center', paddingVertical: 20 }
 });
 
 export default MyRecipeDetailScreen;

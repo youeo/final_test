@@ -1,9 +1,10 @@
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, StyleSheet, Alert, StatusBar } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, StyleSheet, Alert, StatusBar, Modal, TextInput } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { ChevronLeftIcon, PlusIcon } from 'react-native-heroicons/outline';
+import { ChevronLeftIcon, PlusIcon, ChevronRightIcon } from 'react-native-heroicons/outline';
+import { UserCircleIcon } from 'react-native-heroicons/solid';
 import axios from 'axios';
 import { getAuthToken } from '../../AuthService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -15,6 +16,10 @@ export default function ProfileScreen() {
   const isFocused = useIsFocused();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [password, setPassword] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (isFocused) {
@@ -77,30 +82,64 @@ export default function ProfileScreen() {
     );
   };
 
+  const handleDeleteAccount = async () => {
+    if (!password) {
+        Alert.alert("오류", "비밀번호를 입력해주세요.");
+        return;
+    }
+    setIsDeleting(true);
+    try {
+        const token = await getAuthToken();
+        const response = await axios.delete(`${API_BASE_URL}/api/delete`, {
+            headers: { Authorization: `Bearer ${token}` },
+            data: { password: password }
+        });
+
+        if (response.data === 1) {
+            Alert.alert("완료", "회원 탈퇴가 처리되었습니다.");
+            setModalVisible(false);
+            await AsyncStorage.removeItem('accessToken');
+            navigation.reset({ index: 0, routes: [{ name: 'Welcome' }] });
+        } else if (response.data === 4) {
+            Alert.alert("오류", "비밀번호가 일치하지 않습니다.");
+        } else {
+            throw new Error("알 수 없는 서버 응답");
+        }
+    } catch (error) {
+        console.error("Delete account error:", error.response || error);
+        Alert.alert("오류", "회원 탈퇴 중 문제가 발생했습니다.");
+    } finally {
+        setIsDeleting(false);
+        setPassword('');
+    }
+  };
+
   const renderSection = (title, data, navigateTo) => (
-    <TouchableOpacity onPress={() => navigation.navigate(navigateTo, { userData: userData })} activeOpacity={0.8}>
-      <Animated.View
-        entering={FadeInDown.duration(700).springify().damping(12)}
-        style={styles.sectionContainer} // ## 통일된 배경색 적용 ##
-      >
-        <Text style={styles.sectionTitle}>{title}</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            {data && data.length > 0 ? (
-              data.map((item, index) => (
-                <View key={index} style={styles.itemBadge}>
-                  <Text style={styles.itemText} numberOfLines={2}>{item}</Text>
-                </View>
-              ))
-            ) : (
-              <View style={styles.plusBadge}>
-                <PlusIcon size={hp(4)} strokeWidth={2.5} color="#a1a1aa" />
-              </View>
-            )}
-          </View>
-        </ScrollView>
-      </Animated.View>
-    </TouchableOpacity>
+    <Animated.View entering={FadeInDown.duration(700).springify().damping(12)}>
+        <TouchableOpacity 
+            onPress={() => navigation.navigate(navigateTo, { userData: userData })} 
+            activeOpacity={0.8}
+            style={styles.sectionContainer}
+        >
+            <View style={{ flex: 1 }}>
+                <Text style={styles.sectionTitle}>{title}</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    {data && data.length > 0 ? (
+                        data.map((item, index) => (
+                            <View key={index} style={styles.itemBadge}>
+                                <Text style={styles.itemText}>{item}</Text>
+                            </View>
+                        ))
+                    ) : (
+                        <View style={styles.plusBadge}>
+                            <PlusIcon size={hp(3)} strokeWidth={2.5} color="#a1a1aa" />
+                        </View>
+                    )}
+                </ScrollView>
+            </View>
+            <ChevronRightIcon size={hp(3)} color="#d1d5db" />
+        </TouchableOpacity>
+    </Animated.View>
   );
 
   if (loading) {
@@ -113,28 +152,73 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar style="dark" />
-      <Animated.View entering={FadeInDown.delay(200).duration(1000)} style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <ChevronLeftIcon size={hp(3.5)} strokeWidth={3} color="#333" />
+      <StatusBar barStyle="dark-content" />
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
+          <ChevronLeftIcon size={hp(3.5)} strokeWidth={3} color="#fbbf24" />
         </TouchableOpacity>
-      </Animated.View>
-
-      <View style={styles.userInfoContainer}>
-        <Text style={styles.userIdText}>{userData.userId}</Text>
+        <Text style={styles.headerTitle}>프로필</Text>
+        <View style={{ width: hp(5) }} /> 
       </View>
 
-      <ScrollView style={styles.contentContainer} contentContainerStyle={{ paddingBottom: 20 }}>
+      <ScrollView style={styles.contentContainer} contentContainerStyle={{ paddingBottom: 40 }}>
+        <View style={styles.userInfoContainer}>
+            <UserCircleIcon size={hp(8)} color="#d1d5db" />
+            <Text style={styles.userIdText}>{userData.userId}</Text>
+        </View>
+
         {renderSection('알레르기', userData.bannedList, 'SelectAllergyScreen')}
         {renderSection('조리도구', userData.toolsList, 'SelectToolScreen')}
-        {renderSection('냉장고 현황', userData.ingredients.map(ing => ing.name), 'SelectIngredientsScreen')}
-      </ScrollView>
-
-      <View style={styles.footer}>
+        {renderSection('냉장고', userData.ingredients.map(ing => ing.name), 'SelectIngredientsScreen')}
+      
         <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
             <Text style={styles.logoutButtonText}>로그아웃</Text>
         </TouchableOpacity>
-      </View>
+
+        <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.deleteButton}>
+            <Text style={styles.deleteButtonText}>회원 탈퇴</Text>
+        </TouchableOpacity>
+      </ScrollView>
+
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>회원 탈퇴</Text>
+                <Text style={styles.modalText}>
+                    계정을 삭제하시려면 비밀번호를 입력해주세요. 이 작업은 되돌릴 수 없습니다.
+                </Text>
+                <TextInput
+                    style={styles.modalInput}
+                    placeholder="비밀번호"
+                    secureTextEntry
+                    value={password}
+                    onChangeText={setPassword}
+                    autoCapitalize="none"
+                />
+                <View style={styles.modalButtons}>
+                    <TouchableOpacity
+                        style={[styles.modalButton, styles.cancelButton]}
+                        onPress={() => setModalVisible(false)}
+                    >
+                        <Text style={styles.cancelButtonText}>취소</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.modalButton, styles.confirmButton]}
+                        onPress={handleDeleteAccount}
+                        disabled={isDeleting}
+                    >
+                        {isDeleting ? <ActivityIndicator color="#fff" /> : <Text style={styles.confirmButtonText}>탈퇴</Text>}
+                    </TouchableOpacity>
+                </View>
+            </View>
+        </View>
+      </Modal>
+
     </View>
   );
 }
@@ -142,24 +226,154 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'white' },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  header: { width: '100%', flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', paddingTop: hp(7), paddingHorizontal: wp(5) },
-  backButton: { padding: 5 },
-  userInfoContainer: { paddingHorizontal: wp(5), marginTop: hp(1) },
-  userIdText: { fontWeight: 'bold', fontSize: hp(4), color: '#1f2937' },
-  contentContainer: { paddingHorizontal: wp(5), marginTop: hp(4) },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: hp(7),
+    paddingHorizontal: wp(5),
+    paddingBottom: hp(2),
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+  },
+  headerButton: {
+    backgroundColor: '#f3f4f6',
+    padding: 8,
+    borderRadius: 999,
+  },
+  headerTitle: {
+    fontSize: hp(2.2),
+    fontWeight: 'bold',
+  },
+  userInfoContainer: {
+    paddingHorizontal: wp(5),
+    paddingVertical: hp(4),
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  userIdText: {
+    fontWeight: 'bold',
+    fontSize: hp(3),
+    color: '#1f2937',
+    marginLeft: wp(4),
+  },
+  contentContainer: {
+    paddingHorizontal: wp(5),
+  },
   sectionContainer: {
-    backgroundColor: '#e5e7eb', 
+    backgroundColor: '#f9fafb',
     borderWidth: 1,
     borderColor: '#f3f4f6',
     padding: wp(4),
     borderRadius: 16,
     marginBottom: hp(2.5),
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  sectionTitle: { fontSize: hp(2.2), fontWeight: 'bold', color: '#374151', marginBottom: hp(1.5) },
-  itemBadge: { minWidth: wp(16), height: wp(16), backgroundColor: '#6c7a8cff', borderRadius: 12, justifyContent: 'center', alignItems: 'center', padding: 8, marginRight: 12 },
-  itemText: { color: 'white', fontSize: hp(1.8), textAlign: 'center' },
-  plusBadge: { width: wp(16), height: wp(16), backgroundColor: '#e5e7eb', borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
-  footer: { paddingHorizontal: wp(5), paddingBottom: hp(4), paddingTop: hp(2) },
-  logoutButton: { backgroundColor: '#e5e7eb', paddingVertical: hp(1.8), borderRadius: 12, alignItems: 'center' },
-  logoutButtonText: { color: '#4b5563', fontSize: hp(2), fontWeight: '600' }
+  sectionTitle: {
+    fontSize: hp(2.2),
+    fontWeight: 'bold',
+    color: '#374151',
+    marginBottom: hp(1.5),
+  },
+  itemBadge: {
+    backgroundColor: '#4b5563',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginRight: 10,
+  },
+  itemText: {
+    color: 'white',
+    fontSize: hp(1.8),
+  },
+  plusBadge: {
+    width: wp(12),
+    height: wp(12),
+    backgroundColor: '#f3f4f6',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  logoutButton: {
+    backgroundColor: '#f3f4f6',
+    paddingVertical: hp(1.8),
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: hp(4),
+  },
+  logoutButtonText: {
+    color: '#4b5563',
+    fontSize: hp(2),
+    fontWeight: '600',
+  },
+  // --- ## 회원탈퇴 버튼 스타일 수정 ## ---
+  deleteButton: {
+    alignItems: 'center',
+    marginTop: hp(3),
+    paddingVertical: 8, // 터치 영역 확보
+  },
+  deleteButtonText: {
+    color: '#ef4444', // 빨간색
+    fontSize: hp(1.8),
+    textDecorationLine: 'underline', // 밑줄
+  },
+  // ---
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    width: '90%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+  },
+  modalTitle: {
+    fontSize: hp(2.5),
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  modalText: {
+    fontSize: hp(1.8),
+    color: '#4b5563',
+    marginBottom: 20,
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  modalButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginLeft: 10,
+  },
+  cancelButton: {
+    backgroundColor: '#e5e7eb',
+  },
+  cancelButtonText: {
+    color: '#4b5563',
+    fontWeight: 'bold',
+  },
+  confirmButton: {
+    backgroundColor: '#ef4444',
+  },
+  confirmButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
 });
