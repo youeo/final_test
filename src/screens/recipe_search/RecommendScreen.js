@@ -115,7 +115,7 @@ export default function RecommendScreen() {
 
       if (tab === 'possible') {
         setRecipesPossible(cleaned);
-        // console.log(Type);
+        //console.log(res);
       }
       else setRecipesNeeds(cleaned);
     } catch (error) {

@@ -10,7 +10,7 @@ export default function AiRecommend() {
   const [meals, setMeals] = useState([]);
 
   useEffect(() => {
-    fetch('http://43.200.200.161:8080/recipes/Recipetoday')
+    fetch('http://43.200.200.161:8080/api/recipes/Recipetoday')
       .then(res => res.json())
       .then(data => setMeals(data))
       .catch(err => console.error(err));
