@@ -109,7 +109,10 @@ export default function RecommendScreen() {
         setRecipesPossible(cleaned);
         //console.log(res);
       }
-      else setRecipesNeeds(cleaned);
+      else {
+        setRecipesNeeds(cleaned);
+        //console.log(res);
+      }
     } catch (error) {
       console.log('[searchFromAI]', tab, error?.response?.status, error?.response?.data);
       Alert.alert('오류', '레시피를 추천받는 중 문제가 발생했습니다.');

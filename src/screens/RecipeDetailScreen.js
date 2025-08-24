@@ -14,6 +14,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const API_BASE_URL = 'http://43.200.200.161:8080';
 
+// 하나 이상의 도구는 조합으로 매핑
 const TOOLS_BIT_MAP = {
   '프라이팬': 1, '냄비': 2, '웍': 4, '밀대': 8, '믹서기': 16, '핸드블랜더': 32, '거품기': 64,
   '연육기': 128, '착즙기': 256, '전자레인지': 512, '가스레인지': 1024, '오븐': 2048,
@@ -284,6 +285,16 @@ export default function RecipeDetailScreen(props) {
     }
   };
 
+  // 도구 표시용 (비트마스크)
+  const decodeToolLabels = (mask = 0) => {
+    if (!mask || typeof mask !== 'number') return [];
+    const labels = [];
+    for (const [label, bit] of Object.entries(TOOLS_BIT_MAP)) {
+      if ((mask & bit) !== 0) labels.push(label);
+    }
+    return labels;
+  };
+
   // 구분선 구현용
   const Divider = () => (
     <View
@@ -310,13 +321,8 @@ export default function RecipeDetailScreen(props) {
       <View className="flex-row justify-center">
         <View
           style={{
-            width: wp(98),
-            height: hp(10),
-            borderRadius: 53,
-            borderBottomLeftRadius: 40,
-            borderBottomRightRadius: 40,
-            marginTop: 4,
-            backgroundColor: '#ffffff' // 연한 회색 (빈칸 티나게)
+            width: wp(98), height: hp(10), borderRadius: 53, borderBottomLeftRadius: 40, borderBottomRightRadius: 40,
+            marginTop: 4, backgroundColor: '#ffffff' // 연한 회색 (빈칸 티나게)
           }}
         />
       </View>
@@ -358,22 +364,11 @@ export default function RecipeDetailScreen(props) {
               Time
             </Text>
             <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'flex-start',
-                alignItems: 'flex-start',
-                flexWrap: 'wrap',
-                gap: 8
-              }}
+              style={{ flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}
             >
               <View
                 style={{
-                  backgroundColor: '#fbbf24',
-                  borderRadius: 9999,
-                  paddingVertical: 6,
-                  paddingHorizontal: 12,
-                  borderWidth: 1,
-                  borderColor: '#e5e7eb'
+                  backgroundColor: '#fbbf24', borderRadius: 9999, paddingVertical: 6, paddingHorizontal: 12, borderWidth: 1, borderColor: '#e5e7eb'
                 }}
               >
                 <Text style={{ color: '#374151', fontWeight: '600' }}>
@@ -391,37 +386,39 @@ export default function RecipeDetailScreen(props) {
             <Text style={{fontSize: hp(2.2), fontWeight: '700', color: '#374151', marginBottom: 8 }}>
               Tools
             </Text>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'flex-start',
-                alignItems: 'flex-start',
-                flexWrap: 'wrap',
-                gap: 8
-              }}
-            >
-              <View
-                style={{
-                  backgroundColor: '#fff7ed',
-                  borderRadius: 9999,
-                  paddingVertical: 6,
-                  paddingHorizontal: 12,
-                  borderWidth: 1,
-                  borderColor: '#fed7aa'
-                }}
-              >
-                <Text style={{ color: '#9a3412', fontWeight: '600' }}>
-                  {TOOLS_BIT_MAP[meal?.tools] ?? "없음"}
-                </Text>
-              </View>
-            </View>
+            {(() => {
+              const toolLabels = decodeToolLabels(meal?.tools ?? 0);
+              return (
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                  {toolLabels.length === 0 ? (
+                    <View style={{
+                      backgroundColor: '#fff7ed', borderColor: '#fed7aa',
+                      borderWidth: 1, borderRadius: 9999,
+                      paddingVertical: 6, paddingHorizontal: 12, marginRight: 8, marginBottom: 8
+                    }}>
+                      <Text style={{ color: '#9a3412', fontWeight: '600' }}>없음</Text>
+                    </View>
+                  ) : (
+                    toolLabels.map((label, idx) => (
+                      <View key={idx} style={{
+                        backgroundColor: '#fff7ed', borderColor: '#fed7aa',
+                        borderWidth: 1, borderRadius: 9999,
+                        paddingVertical: 6, paddingHorizontal: 12, marginRight: 8, marginBottom: 4
+                      }}>
+                        <Text style={{ color: '#9a3412', fontWeight: '600' }}>{label}</Text>
+                      </View>
+                    ))
+                  )}
+                </View>
+              );
+            })()}
           </Animated.View>
 
           {/* 재료 */}
           {Array.isArray(meal?.mainIngredients) && meal.mainIngredients.length > 0 && (
             <Animated.View
               entering={FadeInDown.delay(160).duration(700).springify().damping(12)}
-              style={{ marginTop: 16 }}
+              style={{ marginTop: 10 }}
             >
               <Text style={{ fontSize: hp(2.2), fontWeight: '700', color: '#374151', marginBottom: 8 }}>
                 Ingredients
@@ -431,14 +428,8 @@ export default function RecipeDetailScreen(props) {
                   <View
                     key={`main-${idx}`}
                     style={{
-                      backgroundColor: '#fff7ed',
-                      borderColor: '#fed7aa',
-                      borderWidth: 1,
-                      borderRadius: 9999,
-                      paddingVertical: 6,
-                      paddingHorizontal: 10,
-                      marginRight: 8,
-                      marginBottom: 8
+                      backgroundColor: '#fff7ed', borderColor: '#fed7aa', borderWidth: 1, borderRadius: 9999,
+                      paddingVertical: 6, paddingHorizontal: 10, marginRight: 8, marginBottom: 8
                     }}
                   >
                     <Text style={{ color: '#9a3412', fontWeight: '600' }}>
@@ -465,14 +456,8 @@ export default function RecipeDetailScreen(props) {
                   <View
                     key={`sub-${idx}`}
                     style={{
-                      backgroundColor: '#eef2ff',
-                      borderColor: '#c7d2fe',
-                      borderWidth: 1,
-                      borderRadius: 9999,
-                      paddingVertical: 6,
-                      paddingHorizontal: 10,
-                      marginRight: 8,
-                      marginBottom: 8
+                      backgroundColor: '#eef2ff', borderColor: '#c7d2fe', borderWidth: 1, borderRadius: 9999,
+                      paddingVertical: 6, paddingHorizontal: 10, marginRight: 8, marginBottom: 8
                     }}
                   >
                     <Text style={{ color: '#3730a3', fontWeight: '600' }}>
