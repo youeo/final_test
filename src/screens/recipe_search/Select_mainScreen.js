@@ -31,8 +31,8 @@ export default function Select_mainScreen() {
 
         <Animated.View entering={FadeIn.delay(200).duration(1000)} className="w-full flex-row justify-between items-center pt-14">
             {/* 뒤로가기 */}
-            <TouchableOpacity onPress={()=> navigation.goBack()} className="p-2 rounded-full ml-5 bg-gr">
-                <ChevronLeftIcon  strokeWidth={4.5} color="#fbbf24" />
+            <TouchableOpacity onPress={()=> navigation.goBack()} className="p-2 rounded-full ml-5 bg-black/10">
+                <ChevronLeftIcon size={hp(3.5)} strokeWidth={5} color="#fbbf24" />
             </TouchableOpacity>
             {/* 재료 배열 넘겨주기 */}
             <TouchableOpacity
@@ -60,15 +60,15 @@ export default function Select_mainScreen() {
                 const subIngredients  = subNames.map(toObj);
 
                 if (mainIngredients.length === 0 && subIngredients.length === 0) {
-                  // 아무것도 선택 안 했으면 이동 막기 (선택)
+                  // 아무것도 선택 안 했으면 이동 막기
                   return;
                 }
 
                 navigation.navigate('Recommend', { mainIngredients, subIngredients, Type, });
               }}
-              className="p-2 rounded-full mr-5 bg-gr"
+              className="pt-1.5 pb-2.5 px-2 rounded-full mr-5 bg-black/10 items-center justify-center"
             >
-              <Text style={{fontSize: hp(2)}} className='text-ye font-bold'>완료</Text>
+              <Text style={{fontSize: hp(3)}} className='text-ye font-semibold'>완료</Text>
             </TouchableOpacity>
         </Animated.View>
 
@@ -91,7 +91,8 @@ export default function Select_mainScreen() {
         </View>
 
         <View style={[styles.selectedBox, {flex: 0.4}]}>
-          <Text className="mx-10" style={{ fontSize: hp(4.6), color: 'black', marginBottom: 5, textAlign: 'center', fontWeight: 'bold' }}>요리의 주인공을 골라주세요!</Text>
+          <Text className="mx-10" style={{ fontSize: hp(4.6), color: 'black', marginBottom: 5, textAlign: 'center', fontWeight: 'bold' }}>요리의
+            <Text className="text-gr font-extrabold" style={{ fontSize: hp(6)}}>주인공</Text>을 골라주세요!</Text>
         </View>
 
 

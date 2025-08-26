@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  View, Text, TouchableOpacity, ScrollView, StyleSheet, SafeAreaView, ActivityIndicator, Modal, Alert
+  View, Text, TouchableOpacity, ScrollView, StyleSheet, SafeAreaView, ActivityIndicator, Modal, Alert, TextInput
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { ChevronLeftIcon } from 'react-native-heroicons/outline';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import { getAuthToken } from '../../AuthService';
@@ -13,16 +14,41 @@ const API_BASE_URL = 'http://43.200.200.161:8080';
 const MyRecipe = () => {
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState('saved');
-  const [recipes, setRecipes] = useState([]);
+  const [recipes, setRecipes] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [sortModalVisible, setSortModalVisible] = useState(false);
   const [sortOption, setSortOption] = useState('latest');
+  
+  
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredRecipes, setFilteredRecipes] = useState([]); 
 
   useFocusEffect(
     React.useCallback(() => {
       loadRecipesFromServer();
     }, [activeTab, sortOption])
   );
+
+  
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      
+      setFilteredRecipes(recipes);
+    } else {
+      
+      const filtered = recipes.filter(recipe => {
+        const allIngredients = [
+          ...(recipe.mainIngredients || []),
+          ...(recipe.subIngredients || [])
+        ];
+        
+        return allIngredients.some(ingredient => 
+          ingredient.name && ingredient.name.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      });
+      setFilteredRecipes(filtered);
+    }
+  }, [searchQuery, recipes]); 
 
   const loadRecipesFromServer = async () => {
     setLoading(true);
@@ -44,7 +70,8 @@ const MyRecipe = () => {
         loadedRecipes.sort((a, b) => a.name.localeCompare(b.name, 'ko'));
       }
       
-      setRecipes(loadedRecipes);
+      setRecipes(loadedRecipes); 
+      setFilteredRecipes(loadedRecipes);
 
     } catch (error) {
       console.error('레시피 로드 오류:', error);
@@ -55,7 +82,6 @@ const MyRecipe = () => {
     }
   };
 
-  // --- ## '작성한 레시피' 삭제 함수 ## ---
   const deleteRecipe = (recipeToDelete) => {
     Alert.alert(
       '레시피 삭제',
@@ -72,7 +98,9 @@ const MyRecipe = () => {
                 headers: { Authorization: `Bearer ${token}` }
               });
               
-              setRecipes(prevRecipes => prevRecipes.filter(recipe => recipe.code !== recipeToDelete.code));
+              const updatedRecipes = recipes.filter(recipe => recipe.code !== recipeToDelete.code);
+              setRecipes(updatedRecipes);
+              setFilteredRecipes(updatedRecipes); 
               Alert.alert('완료', '레시피가 삭제되었습니다.');
 
             } catch (error) {
@@ -85,7 +113,6 @@ const MyRecipe = () => {
     );
   };
   
-  // --- ## '찜한 레시피' 제거 함수 (새로 추가) ## ---
   const removeLikedRecipe = (recipeToRemove) => {
     Alert.alert(
       '찜 취소',
@@ -103,7 +130,9 @@ const MyRecipe = () => {
                 headers: { Authorization: `Bearer ${token}` }
               });
               
-              setRecipes(prevRecipes => prevRecipes.filter(recipe => recipe.code !== recipeToRemove.code));
+              const updatedRecipes = recipes.filter(recipe => recipe.code !== recipeToRemove.code);
+              setRecipes(updatedRecipes);
+              setFilteredRecipes(updatedRecipes); 
               Alert.alert('완료', '찜이 취소되었습니다.');
 
             } catch (error) {
@@ -122,13 +151,11 @@ const MyRecipe = () => {
   };
 
   const RecipeCard = ({ recipe }) => {
-    
     const sub = Array.isArray(recipe.subIngredients) ? recipe.subIngredients : [];
     const ingredientsList = sub
       .map(ing => ing?.name) 
       .filter(Boolean)      
       .join(', ');         
-    
     
     return (
       <TouchableOpacity 
@@ -138,7 +165,6 @@ const MyRecipe = () => {
             isEditable: activeTab === 'added' 
         })}
       >
-        
         <TouchableOpacity 
           style={styles.deleteButton}
           onPress={activeTab === 'saved' 
@@ -185,7 +211,7 @@ const MyRecipe = () => {
           style={styles.headerButton}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="arrow-back" size={24} color="#fbbf24" />
+          <ChevronLeftIcon size={hp(3.5)} strokeWidth={4.5} color="#fbbf24" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>나의 레시피</Text>
         <View style={{width: 32}}/>
@@ -209,6 +235,25 @@ const MyRecipe = () => {
           </Text>
         </TouchableOpacity>
       </View>
+      
+
+      <View style={styles.searchContainer}>
+        <Ionicons name="search" size={20} color="#9ca3af" style={{marginLeft: 8}} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="재료 이름으로 레시피 검색..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholderTextColor="#9ca3af"
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchQuery('')} style={{padding: 4}}>
+            <Ionicons name="close-circle" size={20} color="#9ca3af" />
+          </TouchableOpacity>
+        )}
+      </View>
+   
+
 
       <View style={styles.controlContainer}>
         <TouchableOpacity 
@@ -224,7 +269,7 @@ const MyRecipe = () => {
         {activeTab === 'added' && (
           <TouchableOpacity 
             style={styles.addButton}
-            onPress={() => navigation.navigate('AddRecipeScreen')}
+            onPress={() => navigation.navigate('RecipeFormScreen')} 
           >
             <Ionicons name="add" size={20} color="#fff" />
             <Text style={styles.addButtonText}>레시피 추가</Text>
@@ -267,13 +312,13 @@ const MyRecipe = () => {
         </View>
       ) : (
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-          {recipes.length > 0 ? (
-            recipes.map((recipe) => (
+          {filteredRecipes.length > 0 ? (
+            filteredRecipes.map((recipe) => (
               <RecipeCard key={`${recipe.code}-${recipe.name}`} recipe={recipe} />
             ))
           ) : (
             <EmptyRecipeList 
-              message={activeTab === 'saved' ? "찜한 레시피가 없습니다." : "작성한 레시피가 없습니다."} 
+              message={searchQuery ? "검색 결과가 없습니다." : (activeTab === 'saved' ? "찜한 레시피가 없습니다." : "작성한 레시피가 없습니다.")} 
             />
           )}
         </ScrollView>
@@ -293,10 +338,28 @@ const styles = StyleSheet.create({
     tabText: { fontSize: 16 },
     activeTabText: { color: '#fbbf24', fontWeight: 'bold' },
     inactiveTabText: { color: '#6b7280' },
+    searchContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#f3f4f6',
+      borderRadius: 20,
+      marginHorizontal: 16,
+      marginTop: 16,
+      paddingHorizontal: 8,
+    },
+
+    searchInput: {
+      flex: 1,
+      height: 40,
+      fontSize: 15,
+      paddingLeft: 8,
+      color: '#1f2937',
+    },
+   
     controlContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginVertical: 16 },
     sortContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f3f4f6', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 20 },
     sortText: { fontSize: 14, color: '#6b7280', marginRight: 4 },
-    addButton: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 16, backgroundColor: '#4b5563', borderRadius: 20 },
+    addButton: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 16, backgroundColor: '#43794b', borderRadius: 20 },
     addButtonText: { fontSize: 14, fontWeight: '600', marginLeft: 4, color: '#fff' },
     scrollView: { flex: 1, paddingHorizontal: 16 },
     recipeCard: { backgroundColor: '#f9fafb', borderRadius: 12, marginBottom: 16, borderWidth: 1, borderColor: '#f3f4f6', shadowColor: '#1f2937', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 },

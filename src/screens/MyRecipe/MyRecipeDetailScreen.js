@@ -1,108 +1,164 @@
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import React from 'react';
-import {
-  View, Text, ScrollView, StyleSheet, SafeAreaView, TouchableOpacity, Alert
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { StatusBar } from 'expo-status-bar';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import { ChevronLeftIcon } from 'react-native-heroicons/outline';
+import { useNavigation } from '@react-navigation/native';
+import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 
-const MyRecipeDetailScreen = ({ navigation, route }) => {
+const ALL_TOOLS = {
+    '프라이팬': 1, '냄비': 2, '웍': 4, '밀대': 8, '믹서기': 16, '핸드블랜더': 32, '거품기': 64,
+    '연육기': 128, '착즙기': 256, '전자레인지': 512, '가스레인지': 1024, '오븐': 2048,
+    '에어프라이어': 4096, '주전자': 8192, '압력솥': 16384, '토스터': 32768, '찜기': 65536
+};
+
+const decodeToolLabels = (mask = 0) => {
+    if (!mask || typeof mask !== 'number') return [];
+    return Object.keys(ALL_TOOLS).filter(label => (mask & ALL_TOOLS[label]) !== 0);
+};
+
+const Divider = () => (
+    <View
+      style={{
+        borderBottomColor: '#fbbf24',
+        borderBottomWidth: 1.5,
+        marginVertical: 12,
+      }}
+    >
+      <View
+        style={{
+          borderBottomColor: '#fbbf24',
+          borderBottomWidth: 2,
+          marginTop: 2,
+        }}
+      />
+    </View>
+);
+
+export default function MyRecipeDetailScreen({ route }) {
   const { recipe, isEditable } = route.params;
+  const navigation = useNavigation();
 
   if (!recipe) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <Text>레시피 정보를 불러올 수 없습니다.</Text>
-        </View>
-      </SafeAreaView>
+      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <Text>레시피 정보를 불러올 수 없습니다.</Text>
+      </View>
     );
   }
 
-  // --- ## 재료 목록을 subIngredients만 사용하도록 수정 ## ---
-  const ingredientsToDisplay = recipe.subIngredients || [];
+  const ingredients = recipe.subIngredients || [];
+  const toolLabels = decodeToolLabels(recipe.tools);
+  const instructionSteps = recipe.recipe?.flatMap(step => step.split('\n').filter(line => line.trim() !== '')) || [];
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* --- ## 헤더 UI 수정 (공유 버튼 제거) ## --- */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.headerButton} onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#fbbf24" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>레시피 상세</Text>
-        <View style={{ width: 40 }} />
+    <ScrollView style={{backgroundColor: 'white', flex: 1}} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 30 }}>
+      <StatusBar style={"light"} />
+
+      <View style={{flexDirection: 'row', justifyContent: 'center'}}>
+        <View
+          style={{
+            width: wp(98), height: hp(10), borderRadius: 53, borderBottomLeftRadius: 40, borderBottomRightRadius: 40,
+            marginTop: 4, backgroundColor: '#ffffff'
+          }}
+        />
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.contentContainer}>
-        {/* --- ## 전체적인 레이아웃 및 스타일 개선 ## --- */}
-        <View style={styles.titleSection}>
-            <Text style={styles.recipeName}>{recipe.name}</Text>
-            <View style={styles.metaInfo}>
-                <Ionicons name="time-outline" size={16} color="#6b7280" />
-                <Text style={styles.metaText}>{recipe.time || '정보 없음'}</Text>
-            </View>
-        </View>
-
+      <Animated.View entering={FadeIn.delay(200).duration(1000)} style={{width: '100%', position: 'absolute', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 56}}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={{padding: 8, borderRadius: 999, marginLeft: 20, backgroundColor: '#f3f4f6'}}>
+          <ChevronLeftIcon size={hp(3.5)} strokeWidth={4.5} color="#fbbf24" />
+        </TouchableOpacity>
+        
+       
         {isEditable && (
-          <TouchableOpacity style={styles.editButton} onPress={() => navigation.navigate('EditRecipeScreen', { recipe })}>
-              <Ionicons name="create-outline" size={18} color="#4b5563" />
-              <Text style={styles.editButtonText}>레시피 수정</Text>
-          </TouchableOpacity>
+            <TouchableOpacity 
+              onPress={() => navigation.navigate('RecipeFormScreen', { recipe })} 
+              style={{
+                marginRight: 20,
+                backgroundColor: '#f3f4f6',
+                paddingVertical: 8,
+                paddingHorizontal: 16,
+                borderRadius: 20,
+              }}
+            >
+              <Text style={{color: '#fbbf24', fontWeight: 'bold', fontSize: hp(1.8)}}>
+                수정하기
+              </Text>
+            </TouchableOpacity>
+        )}
+      
+
+      </Animated.View>
+
+      <View style={{paddingHorizontal: 16, flex: 1, justifyContent: 'space-between', paddingTop: 32, gap: 16}}>
+        
+        <Animated.View entering={FadeInDown.duration(700).springify().damping(12)} style={{gap: 8}}>
+            <Text style={{ fontSize: hp(3), fontWeight: 'bold', flex: 1, color: '#404040' }}>
+              {recipe?.name ?? '이름 없는 레시피'}
+            </Text>
+            <Divider />
+            {!!recipe?.author && (
+              <Text style={{ fontSize: hp(2), fontWeight: '500', flex: 1, color: '#a3a3a3' }}>
+                by {recipe.author}
+              </Text>
+            )}
+        </Animated.View>
+
+        <Animated.View entering={FadeInDown.delay(100).duration(700).springify().damping(12)} style={{ marginTop: 10 }}>
+             <Text style={{fontSize: hp(2.2), fontWeight: '700', color: '#374151', marginBottom: 8 }}>시간</Text>
+             <View style={{ backgroundColor: '#fbbf24', borderRadius: 9999, paddingVertical: 6, paddingHorizontal: 12, borderWidth: 1, borderColor: '#e5e7eb', alignSelf: 'flex-start' }}>
+                <Text style={{ color: '#374151', fontWeight: '600' }}>
+                  ⏱ {recipe?.time || 'N/A'}
+                </Text>
+             </View>
+        </Animated.View>
+
+        <Animated.View entering={FadeInDown.delay(120).duration(700).springify().damping(12)} style={{ marginTop: 10 }}>
+            <Text style={{fontSize: hp(2.2), fontWeight: '700', color: '#374151', marginBottom: 8 }}>도구</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+              {toolLabels.length === 0 ? (
+                <View style={{ backgroundColor: '#fff7ed', borderColor: '#fed7aa', borderWidth: 1, borderRadius: 9999, paddingVertical: 6, paddingHorizontal: 12, marginRight: 8, marginBottom: 8 }}>
+                  <Text style={{ color: '#9a3412', fontWeight: '600' }}>없음</Text>
+                </View>
+              ) : (
+                toolLabels.map((label, idx) => (
+                  <View key={idx} style={{ backgroundColor: '#fff7ed', borderColor: '#fed7aa', borderWidth: 1, borderRadius: 9999, paddingVertical: 6, paddingHorizontal: 12, marginRight: 8, marginBottom: 4 }}>
+                    <Text style={{ color: '#9a3412', fontWeight: '600' }}>{label}</Text>
+                  </View>
+                ))
+              )}
+            </View>
+        </Animated.View>
+        
+        {ingredients.length > 0 && (
+          <Animated.View entering={FadeInDown.delay(180).duration(700).springify().damping(12)} style={{ marginTop: 8 }}>
+            <Text style={{ fontSize: hp(2.2), fontWeight: '700', color: '#374151', marginBottom: 8 }}>재료</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+              {ingredients.map((ing, idx) => (
+                <View key={`sub-${idx}`} style={{ backgroundColor: '#fff7ed', borderColor: '#fed7aa', borderWidth: 1, borderRadius: 9999, paddingVertical: 6, paddingHorizontal: 10, marginRight: 8, marginBottom: 8 }}>
+                  <Text style={{ color: '#9a3412', fontWeight: '600' }}>
+                    {ing.name}{ing.count ? ` ${ing.count}` : ''}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </Animated.View>
         )}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>재료</Text>
-          {ingredientsToDisplay.length > 0 ? (
-            ingredientsToDisplay.map((ingredient, index) => (
-              <View key={index} style={styles.ingredientItem}>
-                <Text style={styles.ingredientName}>{ingredient.name}</Text>
-                <Text style={styles.ingredientCount}>{ingredient.count || ''}</Text>
-              </View>
-            ))
-          ) : (
-            <Text style={styles.noDataText}>추가 재료 정보가 없습니다.</Text>
-          )}
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>조리 과정</Text>
-          {recipe.recipe && recipe.recipe.length > 0 ? (
-            recipe.recipe.map((step, index) => (
-              <View key={index} style={styles.stepItem}>
-                <Text style={styles.stepNumber}>{index + 1}</Text>
-                <Text style={styles.stepText}>{step}</Text>
-              </View>
-            ))
-           ) : (
-            <Text style={styles.noDataText}>조리 과정 정보가 없습니다.</Text>
-          )}
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+        {instructionSteps.length > 0 && (
+          <Animated.View entering={FadeInDown.delay(300).duration(700).springify().damping(12)} style={{gap: 16}}>
+            <Divider />
+            <Text style={{ fontSize: hp(2.5), fontWeight: 'bold', flex: 1, color: '#404040' }}>요리순서</Text>
+            <View style={{gap: 8}}>
+              {instructionSteps.map((step, idx) => (
+                <Text key={idx} style={{ fontSize: hp(1.6), color: '#404040' }}>
+                  {idx + 1}. {step}
+                </Text>
+              ))}
+            </View>
+          </Animated.View>
+        )}
+      </View>
+    </ScrollView>
   );
-};
-
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#fff' },
-    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: hp(7), paddingBottom: hp(2), backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-    headerButton: { backgroundColor: '#f3f4f6', padding: 8, borderRadius: 999, width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-    headerTitle: { fontSize: hp(2.2), fontWeight: 'bold' },
-    loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    contentContainer: { paddingHorizontal: 20, paddingBottom: 40 },
-    titleSection: { paddingVertical: 24 },
-    recipeName: { fontSize: 28, fontWeight: 'bold', color: '#111827', marginBottom: 12, lineHeight: 36 },
-    metaInfo: { flexDirection: 'row', alignItems: 'center' },
-    metaText: { marginLeft: 8, fontSize: 14, color: '#6b7280' },
-    editButton: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 16, backgroundColor: '#f3f4f6', borderRadius: 20, marginBottom: 32 },
-    editButtonText: { marginLeft: 8, fontSize: 14, color: '#4b5563', fontWeight: '600' },
-    section: { marginBottom: 32 },
-    sectionTitle: { fontSize: 22, fontWeight: 'bold', color: '#111827', marginBottom: 16, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-    ingredientItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f9fafb' },
-    ingredientName: { fontSize: 16, color: '#374151' },
-    ingredientCount: { fontSize: 16, color: '#6b7280' },
-    stepItem: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 20 },
-    stepNumber: { fontSize: 16, fontWeight: 'bold', color: '#fbbf24', marginRight: 12, width: 24, textAlign: 'right' },
-    stepText: { fontSize: 16, color: '#374151', flex: 1, lineHeight: 24 },
-    noDataText: { fontSize: 16, color: '#9ca3af', textAlign: 'center', paddingVertical: 20 }
-});
-
-export default MyRecipeDetailScreen;
+}

@@ -156,15 +156,15 @@ export default function Select_ingreScreen() {
 
       {/* 뒤로가기 및 넘어가기 */}
       <Animated.View entering={FadeIn.delay(200).duration(1000)} className="w-full flex-row justify-between items-center pt-14">
-        <TouchableOpacity onPress={()=> navigation.goBack()} className="p-2 rounded-full ml-5 bg-gr">
-          <ChevronLeftIcon  strokeWidth={4.5} color="#fbbf24" />
+        <TouchableOpacity onPress={()=> navigation.goBack()} className="p-2 rounded-full ml-5 bg-black/10">
+          <ChevronLeftIcon size={hp(3.5)} strokeWidth={5} color="#fbbf24" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={()=> navigation.navigate('Select_main', {selectedIngredients, Type,})} className="p-2 rounded-full mr-5 bg-gr">
-          <Text style={{fontSize: hp(2)}} className='text-ye font-bold'>완료</Text>
+        <TouchableOpacity onPress={()=> navigation.navigate('Select_main', {selectedIngredients, Type,})} className="pt-1.5 pb-2.5 px-2 rounded-full mr-5 bg-black/10 items-center justify-center">
+          <Text style={{fontSize: hp(3)}} className='text-ye font-semibold'>완료</Text>
         </TouchableOpacity>
       </Animated.View>
 
-      <View style={{flex: 0.15}} className="mx-4 space-y-2 justify-start items-center">
+      <View style={{flex: 0.15}} className="pt-3 mx-4 space-y-2 justify-start items-center">
         <Text style={{fontSize: hp(3)}} className="font-bold text-neutral-600">재료 선택</Text>
       </View>
 
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
     margin: 5,
   },
   selectedBox: {
-    backgroundColor: '#444',
+    backgroundColor: '#43794b',
     padding: 15,
     borderRadius: 20,
     marginTop: 4,

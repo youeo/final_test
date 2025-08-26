@@ -51,16 +51,16 @@ export default function HomeScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      <StatusBar backgroundColor="#eab308" barStyle="light-content" />
+      <StatusBar backgroundColor="#e8e9eb" barStyle="dark-content" />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 50 }}
+        contentContainerStyle={{ paddingBottom: 60 }}
         className="space-y-6 pt-10"
       >
 
         <Animated.View entering={FadeInDown.delay(100).duration(600).springify().damping(12)}>
           {/* 로고 */}
-          <View style={{ height: 50 }} className="flex-row justify-between items-center mb-2 top-2 bottom-2 bg-ye">
+          <View style={{ height: 60, borderBottomWidth: 3, borderBottomColor: "#f2ca38" }} className="flex-row justify-between items-center mb-2 top-2 bottom-2 pb-2 pt-2 bg-black/10">
             <Image
               source={require('../../assets/images/recipppe.png')}
               style={{ marginLeft: 16, height: hp(3.2), width: hp(8.3) }}
@@ -68,7 +68,7 @@ export default function HomeScreen() {
             <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
               <Image
                 source={require('../../assets/images/avatar.png')}
-                style={{ marginRight: 16, height: hp(4.2), width: hp(4.3) }}
+                style={{ marginRight: 16, height: hp(4.2), width: hp(4.3), borderRadius: 50,borderWidth: 3, borderColor: "#f2ca38" }}
               />
             </TouchableOpacity>
           </View>
@@ -99,10 +99,10 @@ export default function HomeScreen() {
 
         {/* 오늘의 추천 레시피 */}
         <View className="-mt-10 mx-4 space-y-3">
-          <View className="flex-row justify-between items-center pt-2 pb-2 bg-ye rounded-xl px-4">
+          <View style={{ borderWidth: 3, borderColor: "#f2ca38" }} className="flex-row justify-between items-center pt-2 pb-2 bg-black/10 rounded-xl px-4">
             <Text style={{ fontSize: hp(2) }} className="font-semibold text-gr"> 오늘의 추천 레시피 </Text>
             <TouchableOpacity onPress={() => navigation.navigate('AiRecommend')}>
-              <Text className="text-gr font-semibold"> ≫ </Text>
+              <AntDesign name="doubleright" size={18} color="#43794b" />
             </TouchableOpacity>
           </View>
 
@@ -131,10 +131,10 @@ export default function HomeScreen() {
 
         {/* 오늘의 식재료 상식 */}
         <View className="-mt-10 mx-4 space-y-3">
-          <View className="flex-row justify-between items-center pt-2 pb-2 bg-ye rounded-xl px-4">
+          <View style={{ borderWidth: 3, borderColor: "#f2ca38" }} className="flex-row justify-between items-center pt-2 pb-2 bg-black/10 rounded-xl px-4">
             <Text style={{ fontSize: hp(2) }} className="font-semibold text-gr">오늘의 식재료 상식</Text>
             <TouchableOpacity onPress={() => navigation.navigate('TodaysIngredient')}>
-              <Text className="text-gr font-semibold"> ≫ </Text>
+              <AntDesign name="doubleright" size={18} color="#43794b" />
             </TouchableOpacity>
           </View>
 

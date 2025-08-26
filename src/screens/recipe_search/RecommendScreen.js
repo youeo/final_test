@@ -177,12 +177,12 @@ export default function RecommendScreen() {
       <View style={styles.container}>
         {/* 헤더 */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} className="p-2 rounded-full ml-1 bg-gr">
-            <ChevronLeftIcon strokeWidth={4.5} color="#fbbf24" />
+          <TouchableOpacity onPress={() => navigation.goBack()} className="p-2 rounded-full ml-1 bg-black/10">
+            <ChevronLeftIcon size={hp(3.5)} strokeWidth={4.5} color="#fbbf24" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>AI 추천 레시피</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Home')} className="p-2 rounded-full ml-1 bg-gr">
-            <FontAwesome name="home" size={24} color="#fbbf24" />
+          <TouchableOpacity onPress={() => navigation.navigate('Home')} className="p-2 rounded-full ml-1 bg-black/10">
+            <FontAwesome name="home" size={30} color="#fbbf24" />
           </TouchableOpacity>
         </View>
 

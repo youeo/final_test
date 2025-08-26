@@ -19,13 +19,12 @@ import SelectAllergyScreen from '../screens/profile/SelectAllergyScreen';
 import SelectToolScreen from '../screens/profile/SelectToolScreen';
 import SelectIngredientsScreen from '../screens/profile/SelectIngredientsScreen';
 
-// ## '나의 레시피' 관련 스크린 4개 추가 ##
+// '나의 레시피' 관련 스크린
 import MyRecipe from '../screens/MyRecipe/MyRecipe';
-import AddRecipeScreen from '../screens/MyRecipe/AddRecipeScreen';
-import EditRecipeScreen from '../screens/MyRecipe/EditRecipeScreen';
+import RecipeFormScreen from '../screens/MyRecipe/RecipeFormScreen';
 import MyRecipeDetailScreen from '../screens/MyRecipe/MyRecipeDetailScreen';
 
-// ## '레시피 검색' 관련 스크린 5개 등록 ##
+// '레시피 검색' 관련 스크린
 import Select_cateScreen from '../screens/recipe_search/Select_cateScreen';
 import Select_ingreScreen from '../screens/recipe_search/Select_ingreScreen';
 import Select_mainScreen from '../screens/recipe_search/Select_mainScreen';
@@ -38,6 +37,7 @@ function AppNavigation() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Welcome" screenOptions={{ headerShown: false }}>
+        
         {/* 기본 화면 */}
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Welcome" component={WelcomeScreen} />
@@ -56,17 +56,16 @@ function AppNavigation() {
         <Stack.Screen name="SelectIngredientsScreen" component={SelectIngredientsScreen} />
 
 
-        {/* ## '레시피 검색' 관련 스크린 5개 등록 ## */}
+        {/* '레시피 검색' 관련 스크린 */}
         <Stack.Screen name="Select_cate" component={Select_cateScreen} />
         <Stack.Screen name="Select_ingre" component={Select_ingreScreen} />
         <Stack.Screen name="Select_main" component={Select_mainScreen} />
         <Stack.Screen name="Loading" component={LoadingScreen} />
         <Stack.Screen name="Recommend" component={RecommendScreen} />
         
-        {/* ## '나의 레시피' 관련 스크린 4개 등록 ## */}
+        {/* '나의 레시피' 관련 스크린 */}
         <Stack.Screen name="MyRecipe" component={MyRecipe} />
-        <Stack.Screen name="AddRecipeScreen" component={AddRecipeScreen} />
-        <Stack.Screen name="EditRecipeScreen" component={EditRecipeScreen} />
+        <Stack.Screen name="RecipeFormScreen" component={RecipeFormScreen} />
         <Stack.Screen name="MyRecipeDetailScreen" component={MyRecipeDetailScreen} />
 
       </Stack.Navigator>
