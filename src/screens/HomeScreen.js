@@ -59,6 +59,7 @@ export default function HomeScreen() {
       >
 
         <Animated.View entering={FadeInDown.delay(100).duration(600).springify().damping(12)}>
+          
           {/* 로고 */}
           <View style={{ height: 60, borderBottomWidth: 3, borderBottomColor: "#f2ca38" }} className="flex-row justify-between items-center mb-2 top-2 bottom-2 pb-2 pt-2 bg-black/10">
             <Image
@@ -107,7 +108,7 @@ export default function HomeScreen() {
           </View>
 
           {/* 추천 레시피 카드 */}
-          <FlatList
+          {/* <FlatList
             data={meals}   // 서버에서 가져온 5개 레시피
             keyExtractor={(item, index) => index.toString()}
             horizontal
@@ -115,7 +116,7 @@ export default function HomeScreen() {
             renderItem={({ item }) => (
               <TouchableOpacity 
                 className="mr-3"
-                onPress={() => navigation.navigate('RecipeDetail', { recipe: item })}
+                onPress={() => navigation.navigate('RecipeDetailScreen', { recipe: item })}
               >
                 <Image
                   source={{ uri: item.image }} // 서버에서 받은 레시피 이미지
@@ -126,7 +127,7 @@ export default function HomeScreen() {
                 </Text>
               </TouchableOpacity>
             )}
-          />
+          /> */}
         </View>
 
         {/* 오늘의 식재료 상식 */}
@@ -139,7 +140,7 @@ export default function HomeScreen() {
           </View>
 
           {/* 미리보기 카드 */}
-          {ingredient && (
+          {/* {ingredient && (
             <TouchableOpacity 
               className="items-center"
               onPress={() => navigation.navigate('TodaysIngredient')}
@@ -152,7 +153,7 @@ export default function HomeScreen() {
                 {ingredient.name}
               </Text>
             </TouchableOpacity>
-          )}
+          )} */}
         </View>
       </ScrollView>
     </View>

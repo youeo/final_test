@@ -6,12 +6,14 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from '../screens/HomeScreen';
 import WelcomeScreen from '../screens/WelcomeScreen';
 import RecipeDetailScreen from '../screens/RecipeDetailScreen';
-import LoginScreen from '../screens/hyunsun/LoginScreen';
-import SignupScreen from '../screens/hyunsun/SignupScreen';
+
+// 로그인&회원가입 화면
+import LoginScreen from '../screens/Account/LoginScreen';
+import SignupScreen from '../screens/Account/SignupScreen';
 
 // 추천 화면들
-import AiRecommend from '../screens/hyunsun/AiRecommend';
-import TodaysIngredient from '../screens/hyunsun/TodaysIngredient';
+import AiRecommend from '../screens/DailyRecommend/AiRecommend';
+import TodaysIngredient from '../screens/DailyRecommend/TodaysIngredient';
 
 // 프로필 관련 화면들
 import ProfileScreen from '../screens/profile/ProfileScreen';
