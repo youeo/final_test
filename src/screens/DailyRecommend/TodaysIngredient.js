@@ -116,6 +116,7 @@ export default function IngredientToday() {
           <Text style={styles.headerTitle}>오늘의 식재료 상식</Text>
           <TouchableOpacity onPress={() => navigation.navigate('Home')} style={{ padding: 8, borderRadius: 999, backgroundColor: 'rgba(0,0,0,0.1)' }}>
             <FontAwesome name="home" size={30} color="#fbbf24" />
+
           </TouchableOpacity>
         </View>
 
