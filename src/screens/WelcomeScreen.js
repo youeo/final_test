@@ -28,7 +28,7 @@ export default function WelcomeScreen() {
       <Animated.View className="bg-white/20 rounded-full" style={{padding: ring2padding}}>
         <Animated.View className="bg-white/20 rounded-full" style={{padding: ring1padding}}>
             <Image source={require('../../assets/images/welcome.png')}
-                style={{width: hp(20), height: hp(20)}} />
+                style={{width: hp(30), height: hp(30)}} />
         </Animated.View>
       </Animated.View>
 

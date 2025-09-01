@@ -1,12 +1,10 @@
-import { View, Text, Pressable, TouchableOpacity } from 'react-native'
+import { View, Text, Pressable, TouchableOpacity, StyleSheet } from 'react-native'
 import { StatusBar } from 'expo-status-bar';
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { ChevronLeftIcon, ClockIcon, FireIcon } from 'react-native-heroicons/outline';
-import AntDesign from '@expo/vector-icons/AntDesign';
-import React from 'react'
 
 export default function Select_cateScreen() {
     const navigation = useNavigation();
@@ -34,7 +32,9 @@ export default function Select_cateScreen() {
                 >
                 <View style={{height: 180,  width: 180}} className="bg-gr rounded-3xl flex-col justify-center items-center">
                     <Text style={{fontSize: hp(2.8)}} className="font-semibold text-ye pb-3">식사용</Text>
-                    <MaterialCommunityIcons name="rice" size={hp(5.5)} color="#ffab00" />
+                    <View style={styles.qCircle}>
+                        <MaterialCommunityIcons name="rice" size={hp(4)} color="#ffab00" />
+                    </View>
                 </View >
                 </Pressable>
                 <Pressable
@@ -43,7 +43,9 @@ export default function Select_cateScreen() {
                 >
                 <View style={{height: 180,  width: 180}} className="bg-gr rounded-3xl flex-col justify-center items-center">
                     <Text style={{fontSize: hp(2.8)}} className="font-semibold text-ye pb-3">디저트용</Text>
-                    <MaterialCommunityIcons name="cupcake" size={hp(5.5)} color="#ffab00" />
+                    <View style={styles.qCircle}>
+                        <MaterialCommunityIcons name="cupcake" size={hp(4)} color="#ffab00" />
+                    </View>
                 </View >
                 </Pressable>
           </View>
@@ -54,3 +56,16 @@ export default function Select_cateScreen() {
         </Animated.View>
     )
 }
+
+const styles = StyleSheet.create({
+  qCircle: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: '#43794b',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#ffab00',
+  },
+})

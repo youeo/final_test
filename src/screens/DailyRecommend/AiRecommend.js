@@ -206,12 +206,12 @@ export default function AiRecommend() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: hp(7), paddingBottom: hp(2), paddingHorizontal: wp(4), backgroundColor: '#f9fafb', borderBottomWidth: 1, borderColor: '#e5e7eb' },
-  headerTitle: { fontSize: hp(2.5), fontWeight: 'bold' },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: hp(7), paddingBottom: hp(2), paddingHorizontal: wp(4), backgroundColor: '#f9fafb', borderBottomWidth: 1, borderColor: '#e5e7eb', marginBottom: 5},
+  headerTitle: { fontSize: hp(2.5), fontWeight: 'bold', marginLeft: 21 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, paddingBottom: 40 },
   modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 16, textAlign: 'center' },
-  sortOption: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 16, paddingHorizontal: 12, borderRadius: 8, marginBottom: 8 },
+  sortOption: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 16, paddingHorizontal: 12, borderRadius: 8, marginBottom: 8},
   selectedSortOption: { backgroundColor: '#f0f8ff' },
   sortOptionText: { fontSize: 16, color: '#333' },
   selectedSortOptionText: { color: '#007AFF', fontWeight: '500' },

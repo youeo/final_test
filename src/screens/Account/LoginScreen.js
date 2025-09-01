@@ -3,7 +3,7 @@ import {
   View, TextInput, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as KakaoLogins from '@react-native-seoul/kakao-login';
+//import * as KakaoLogins from '@react-native-seoul/kakao-login';
 import { AntDesign, Ionicons } from '@expo/vector-icons';
 
 const API_BASE_URL = 'http://43.200.200.161:8080';
@@ -66,21 +66,21 @@ const LoginScreen = ({ navigation }) => {
   };
 
   // ✅ 카카오 로그인
-  const handleKakaoLogin = async () => {
-    try {
-      const token = await KakaoLogins.login();
-      console.log('카카오 토큰:', token);
+  // const handleKakaoLogin = async () => {
+  //   try {
+  //     const token = await KakaoLogins.login();
+  //     console.log('카카오 토큰:', token);
 
-      const profile = await KakaoLogins.getProfile();
-      console.log('카카오 프로필:', profile);
+  //     const profile = await KakaoLogins.getProfile();
+  //     console.log('카카오 프로필:', profile);
 
-      // 필요 시 서버 전송
-      Alert.alert('카카오 로그인 완료', `${profile.nickname}님 환영합니다!`);
-    } catch (err) {
-      console.error('카카오 로그인 실패:', err);
-      Alert.alert('카카오 로그인 실패', '카카오 계정 정보를 불러올 수 없습니다.');
-    }
-  };
+  //     // 필요 시 서버 전송
+  //     Alert.alert('카카오 로그인 완료', `${profile.nickname}님 환영합니다!`);
+  //   } catch (err) {
+  //     console.error('카카오 로그인 실패:', err);
+  //     Alert.alert('카카오 로그인 실패', '카카오 계정 정보를 불러올 수 없습니다.');
+  //   }
+  // };
 
   if (isChecking) {
     return (
@@ -117,7 +117,8 @@ const LoginScreen = ({ navigation }) => {
       </TouchableOpacity>
 
       {/* 카카오 로그인 버튼 추가 */}
-      <TouchableOpacity style={styles.kakaoButton} onPress={handleKakaoLogin}>
+      {/* handleKakaoLogin 부분 잠깐 handleLogin으로 대체해둠*/}
+      <TouchableOpacity style={styles.kakaoButton} onPress={handleLogin}>
         <Text style={styles.kakaoText}>카카오 계정으로 로그인</Text>
       </TouchableOpacity>
 

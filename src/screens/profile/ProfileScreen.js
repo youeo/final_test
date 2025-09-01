@@ -163,7 +163,7 @@ export default function ProfileScreen() {
 
       <ScrollView style={styles.contentContainer} contentContainerStyle={{ paddingBottom: 40 }}>
         <View style={styles.userInfoContainer}>
-            <UserCircleIcon size={hp(8)} color="#d1d5db" />
+            <UserCircleIcon size={hp(8)} color="#ffab00" />
             <Text style={styles.userIdText}>{userData.userId}</Text>
         </View>
 
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     marginBottom: hp(1.5),
   },
   itemBadge: {
-    backgroundColor: '#4b5563',
+    backgroundColor: '#43794b',
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     borderColor: '#e5e7eb',
   },
   logoutButton: {
-    backgroundColor: '#f3f4f6',
+    backgroundColor: '#d9d9d9',
     paddingVertical: hp(1.8),
     borderRadius: 12,
     alignItems: 'center',

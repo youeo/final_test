@@ -91,8 +91,8 @@ export default function Select_mainScreen() {
         </View>
 
         <View style={[styles.selectedBox, {flex: 0.4}]}>
-          <Text className="mx-10" style={{ fontSize: hp(4.6), color: 'black', marginBottom: 5, textAlign: 'center', fontWeight: 'bold' }}>요리의
-            <Text className="text-gr font-extrabold" style={{ fontSize: hp(6)}}>주인공</Text>을 골라주세요!</Text>
+          <Text className="mx-10" style={{ fontSize: hp(4.6), color: 'black', marginBottom: 5, textAlign: 'center', fontWeight: 'bold' }}>요리의 
+            <Text className="text-gr font-extrabold" style={{ fontSize: hp(6)}}> 주인공</Text>을 골라주세요!</Text>
         </View>
 
 
