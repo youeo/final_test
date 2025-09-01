@@ -71,7 +71,7 @@ export default function HomeScreen() {
       {/* 상단바 */}
       <View
         style={{ height: 60, borderBottomWidth: 4, borderBottomColor: '#f2ca38' }}
-        className="flex-row justify-between items-center mb-2 top-12 bottom-2 pb-2 pt-2 bg-black/10"
+        className="flex-row justify-between items-center mb-2 top-8 bottom-2 pb-2 pt-2 bg-black/10"
       >
         <Image
           source={require('../../assets/images/recipppe.png')}

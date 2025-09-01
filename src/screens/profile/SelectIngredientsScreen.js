@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, ScrollView, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, StatusBar, Modal } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import axios from 'axios';
 import { getAuthToken } from '../../AuthService';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
@@ -21,6 +22,8 @@ const CATEGORIES = ['전체', '육류', '해산물', '채소', '과일', '향신
 
 export default function SelectIngredientsScreen({ route, navigation }) {
   const { userData } = route.params;
+  const insets = useSafeAreaInsets();
+
   const [selectedIngredients, setSelectedIngredients] = useState(userData.ingredients || []);
   const [search, setSearch] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -134,120 +137,122 @@ export default function SelectIngredientsScreen({ route, navigation }) {
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar hidden={true} />
-      
-      <View style={styles.header}>
-        <TouchableOpacity onPress={()=> navigation.goBack()} style={styles.headerButton}>
-          <ChevronLeftIcon  strokeWidth={4.5} color="#fbbf24" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleSave} style={styles.headerButton}>
-          <Text style={{fontSize: hp(2), color: '#fbbf24', fontWeight: 'bold'}}>저장</Text>
-        </TouchableOpacity>
-      </View>
-      
-      <View style={styles.titleContainer}>
-        <Text style={styles.title}>냉장고 재료 선택</Text>
-      </View>
-
-      <View style={styles.searchWrapper}>
-        <View style={styles.searchBar}>
-          <TextInput
-            placeholder='재료 검색...'
-            placeholderTextColor={'gray'}
-            style={styles.searchInput}
-            value={search}
-            onChangeText={setSearch}
-            onSubmitEditing={handleSearch}
-            returnKeyType="search"
-          />
-          <TouchableOpacity onPress={handleSearch} style={styles.searchIconContainer}>
-            <AntDesign name="search1" size={hp(2.5)} color="#ffab00"/>
+    <SafeAreaView style={{flex:1}} edges={['bottom','left','right']}>
+      <View style={styles.container}>
+        <StatusBar hidden={true} />
+        
+        <View style={styles.header}>
+          <TouchableOpacity onPress={()=> navigation.goBack()} style={styles.headerButton}>
+            <ChevronLeftIcon  strokeWidth={4.5} color="#fbbf24" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleSave} style={styles.headerButton}>
+            <Text style={{fontSize: hp(2), color: '#fbbf24', fontWeight: 'bold'}}>저장</Text>
           </TouchableOpacity>
         </View>
-      </View>
+        
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>냉장고 재료 선택</Text>
+        </View>
 
-      <View style={styles.categoryContainer}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{paddingHorizontal: 15}}
-        >
-          {CATEGORIES.map((category)=>{
-            const isActive = category === activeCategory;
-            return (
-              <TouchableOpacity
-                key={category}
-                onPress={() => {
-                    setActiveCategory(category);
-                    setSearch('');
-                    setSearchResults([]);
-                }}
-                style={styles.categoryTouch}
-              >
-                <View style={[styles.categoryPill, isActive ? styles.activeCategoryPill : styles.inactiveCategoryPill]}>
-                  <Text style={styles.categoryText}>
-                    {category}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            )
-          })}
-        </ScrollView>
-      </View>
-      
-      <View style={styles.listTitleContainer}>
-        <Text style={styles.listTitle}>{activeCategory}</Text>
-      </View>
-
-      <View style={styles.listContainer}>
-        <ScrollView
-          contentContainerStyle={styles.itemsContainer}
-          keyboardShouldPersistTaps="handled"
-        >
-          {loading ? <ActivityIndicator size="large" color="#4b5563" /> : renderIngredients()}
-        </ScrollView>
-      </View>
-
-      <View style={styles.selectedBox}>
-        <Text style={styles.selectedBoxTitle}>나의 냉장고</Text>
-        <ScrollView horizontal keyboardShouldPersistTaps="handled">
-          {selectedIngredients.map((item, index) => (
-            <View key={index} style={styles.selectedChip}>
-              <Text>{item.name}</Text>
-              <TouchableOpacity onPress={() => toggleIngredient(item.name)} style={{marginLeft: 5}}>
-                <Text>✕</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </ScrollView>
-      </View>
-
-      {/* --- 직접 추가 모달 --- */}
-      <Modal visible={modalVisible} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>재료 직접 추가</Text>
+        <View style={styles.searchWrapper}>
+          <View style={styles.searchBar}>
             <TextInput
-              placeholder="예: 닭가슴살"
-              value={customInput}
-              onChangeText={setCustomInput}
-              style={styles.modalInput}
-              returnKeyType="done"
-              onSubmitEditing={handleCustomAdd}
+              placeholder='재료 검색...'
+              placeholderTextColor={'gray'}
+              style={styles.searchInput}
+              value={search}
+              onChangeText={setSearch}
+              onSubmitEditing={handleSearch}
+              returnKeyType="search"
             />
-            <View style={styles.modalButtons}>
-              <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.modalButton}>
-                <Text>취소</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleCustomAdd} style={styles.modalButton}>
-                <Text style={{fontWeight: 'bold'}}>추가</Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity onPress={handleSearch} style={styles.searchIconContainer}>
+              <AntDesign name="search1" size={hp(2.5)} color="#ffab00"/>
+            </TouchableOpacity>
           </View>
         </View>
-      </Modal>
-    </View>
+
+        <View style={styles.categoryContainer}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{paddingHorizontal: 15}}
+          >
+            {CATEGORIES.map((category)=>{
+              const isActive = category === activeCategory;
+              return (
+                <TouchableOpacity
+                  key={category}
+                  onPress={() => {
+                      setActiveCategory(category);
+                      setSearch('');
+                      setSearchResults([]);
+                  }}
+                  style={styles.categoryTouch}
+                >
+                  <View style={[styles.categoryPill, isActive ? styles.activeCategoryPill : styles.inactiveCategoryPill]}>
+                    <Text style={styles.categoryText}>
+                      {category}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              )
+            })}
+          </ScrollView>
+        </View>
+        
+        <View style={styles.listTitleContainer}>
+          <Text style={styles.listTitle}>{activeCategory}</Text>
+        </View>
+
+        <View style={styles.listContainer}>
+          <ScrollView
+            contentContainerStyle={styles.itemsContainer}
+            keyboardShouldPersistTaps="handled"
+          >
+            {loading ? <ActivityIndicator size="large" color="#4b5563" /> : renderIngredients()}
+          </ScrollView>
+        </View>
+
+        <View style={styles.selectedBox}>
+          <Text style={styles.selectedBoxTitle}>나의 냉장고</Text>
+          <ScrollView horizontal keyboardShouldPersistTaps="handled">
+            {selectedIngredients.map((item, index) => (
+              <View key={index} style={styles.selectedChip}>
+                <Text>{item.name}</Text>
+                <TouchableOpacity onPress={() => toggleIngredient(item.name)} style={{marginLeft: 5}}>
+                  <Text>✕</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* --- 직접 추가 모달 --- */}
+        <Modal visible={modalVisible} transparent animationType="slide">
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>재료 직접 추가</Text>
+              <TextInput
+                placeholder="예: 닭가슴살"
+                value={customInput}
+                onChangeText={setCustomInput}
+                style={styles.modalInput}
+                returnKeyType="done"
+                onSubmitEditing={handleCustomAdd}
+              />
+              <View style={styles.modalButtons}>
+                <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.modalButton}>
+                  <Text>취소</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={handleCustomAdd} style={styles.modalButton}>
+                  <Text style={{fontWeight: 'bold'}}>추가</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -351,7 +356,7 @@ const styles = StyleSheet.create({
         margin: 5,
     },
     selectedBox: {
-        backgroundColor: '#444',
+        backgroundColor: '#43794b',
         padding: 15,
         borderRadius: 20,
         marginVertical: 10,
@@ -376,7 +381,7 @@ const styles = StyleSheet.create({
     modalOverlay: {
         flex: 1,
         justifyContent: 'center',
-        alignItems: 'center',
+        alignItems: 'flex-end',
         backgroundColor: 'rgba(0,0,0,0.5)',
     },
     modalContent: {

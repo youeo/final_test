@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { StyleSheet, View, Text, TouchableOpacity, TextInput, Modal, ScrollView, Alert, ActivityIndicator } from 'react-native'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
@@ -29,6 +30,7 @@ export default function Select_ingreScreen() {
 
   const route = useRoute();
   const { Type = 0 } = route.params || {};
+  const insets = useSafeAreaInsets();
 
   const navigation = useNavigation();
   const [activeCategory, setActiveCategory] = useState('전체');
@@ -151,154 +153,156 @@ export default function Select_ingreScreen() {
   },[])
 
   return (
-    <Animated.View entering={FadeInDown.delay(100).duration(600).springify().damping(12)} className="flex-1 space-y-4 flex-col">
-      <StatusBar hidden={true} />
+    <SafeAreaView style={{flex:1}} edges={['bottom','left','right']}>
+      <Animated.View entering={FadeInDown.delay(100).duration(600).springify().damping(12)} className="flex-1 space-y-4 flex-col">
+        <StatusBar hidden={true} />
 
-      {/* 뒤로가기 및 넘어가기 */}
-      <Animated.View entering={FadeIn.delay(200).duration(1000)} className="w-full flex-row justify-between items-center pt-14">
-        <TouchableOpacity onPress={()=> navigation.goBack()} className="p-2 rounded-full ml-5 bg-black/10">
-          <ChevronLeftIcon size={hp(3.5)} strokeWidth={5} color="#fbbf24" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={()=> navigation.navigate('Select_main', {selectedIngredients, Type,})} className="pt-1.5 pb-2.5 px-2 rounded-full mr-5 bg-black/10 items-center justify-center">
-          <Text style={{fontSize: hp(3)}} className='text-ye font-semibold'>완료</Text>
-        </TouchableOpacity>
-      </Animated.View>
-
-      <View style={{flex: 0.15}} className="pt-3 mx-4 space-y-2 justify-start items-center">
-        <Text style={{fontSize: hp(3)}} className="font-bold text-neutral-600">재료 선택</Text>
-      </View>
-
-      {/* search bar */}
-      <View style={{flex: 0.15}}>
-        <View className="mx-4 flex-row item-center rounded-full bg-black/5 p-[6px]">
-          <TextInput
-            placeholder='재료 검색...'
-            placeholderTextColor={'gray'}
-            style={{fontSize: hp(1.5)}}
-            className="flex-1 text-base mb-0 pl-3 tracking-wider"
-            value={search}
-            onChangeText={setSearch}
-            onSubmitEditing={handleSearch}
-            returnKeyType="search"
-          />
-          <TouchableOpacity onPress={handleSearch} className="bg-white rounded-full px-3 pt-2.5">
-            <AntDesign name="search1" size={hp(2.5)} color="#ffab00"/>
+        {/* 뒤로가기 및 넘어가기 */}
+        <Animated.View entering={FadeIn.delay(200).duration(1000)} className="w-full flex-row justify-between items-center pt-14">
+          <TouchableOpacity onPress={()=> navigation.goBack()} className="p-2 rounded-full ml-5 bg-black/10">
+            <ChevronLeftIcon size={hp(3.5)} strokeWidth={5} color="#fbbf24" />
           </TouchableOpacity>
+          <TouchableOpacity onPress={()=> navigation.navigate('Select_main', {selectedIngredients, Type,})} className="pt-1.5 pb-2.5 px-2 rounded-full mr-5 bg-black/10 items-center justify-center">
+            <Text style={{fontSize: hp(3)}} className='text-ye font-semibold'>완료</Text>
+          </TouchableOpacity>
+        </Animated.View>
+
+        <View style={{flex: 0.15}} className="pt-3 mx-4 space-y-2 justify-start items-center">
+          <Text style={{fontSize: hp(3)}} className="font-bold text-neutral-600">재료 선택</Text>
         </View>
-        {loading && (
-          <View style={{marginTop: 8, alignItems: 'center'}}>
-            <ActivityIndicator />
+
+        {/* search bar */}
+        <View style={{flex: 0.15}}>
+          <View className="mx-4 flex-row item-center rounded-full bg-black/5 p-[6px]">
+            <TextInput
+              placeholder='재료 검색...'
+              placeholderTextColor={'gray'}
+              style={{fontSize: hp(1.5)}}
+              className="flex-1 text-base mb-0 pl-3 tracking-wider"
+              value={search}
+              onChangeText={setSearch}
+              onSubmitEditing={handleSearch}
+              returnKeyType="search"
+            />
+            <TouchableOpacity onPress={handleSearch} className="bg-white rounded-full px-3 pt-2.5">
+              <AntDesign name="search1" size={hp(2.5)} color="#ffab00"/>
+            </TouchableOpacity>
           </View>
-        )}
-      </View>
+          {loading && (
+            <View style={{marginTop: 8, alignItems: 'center'}}>
+              <ActivityIndicator />
+            </View>
+          )}
+        </View>
 
-      {/* 카테고리 */}
-      <View style={{flex: 0.1}}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          className="space-x-3 mx-1"
-          contentContainerStyle={{paddingHorizontal: 15}}
-        >
-          {filtered_c.map((item)=>{
-            let activeButtonClass = item == activeCategory? ' bg-amber-400': ' bg-black/10';
-            return (
-              <TouchableOpacity
-                key={item}
-                onPress={() => {
-                  setActiveCategory(item);
-                  setSelectedCategory(item);
-                }}
-                className="flex items-center space-y-1"
-              >
-                <View className={"rounded-full p-[7px]"+activeButtonClass}>
-                  <Text className="font-semibold text-neutral-600 m-1 mt-0" style={{fontSize: hp(1.6)}}>
-                    {item}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            )
-          })}
-        </ScrollView>
-      </View>
-
-      <View style={{flex: 0.1}}>
-        <Text style={{fontSize: hp(2)}} className="mx-5 p-1 font-bold text-neutral-600">{activeCategory}</Text>
-      </View>
-
-      {/* 재료 리스트 (필터링 적용) */}
-      <View style={{flex: 1}}>
-        <ScrollView
-          style={{flex: 1}}
-          contentContainerStyle={styles.ingredientsWrap}
-          keyboardShouldPersistTaps="handled"
-        >
-          {filtered_i.map((item) => {
-              const isFromServer =
-                    myFridgeNames.includes(item) ||
-                    searchResults.some(r => (r.name || r.ingredientName) === item);
+        {/* 카테고리 */}
+        <View style={{flex: 0.1}}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            className="space-x-3 mx-1"
+            contentContainerStyle={{paddingHorizontal: 15}}
+          >
+            {filtered_c.map((item)=>{
+              let activeButtonClass = item == activeCategory? ' bg-amber-400': ' bg-black/10';
               return (
                 <TouchableOpacity
                   key={item}
-                  onPress={() => addIngredient(item)}
-                  style={styles.button}
+                  onPress={() => {
+                    setActiveCategory(item);
+                    setSelectedCategory(item);
+                  }}
+                  className="flex items-center space-y-1"
                 >
-                  <Text style={isFromServer ? { fontWeight: 'bold' } : null}>
-                    {item}
-                  </Text>
+                  <View className={"rounded-full p-[7px]"+activeButtonClass}>
+                    <Text className="font-semibold text-neutral-600 m-1 mt-0" style={{fontSize: hp(1.6)}}>
+                      {item}
+                    </Text>
+                  </View>
                 </TouchableOpacity>
-              );
+              )
             })}
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: '#ddd' }]}
-            onPress={() => setModalVisible(true)}
+          </ScrollView>
+        </View>
+
+        <View style={{flex: 0.1}}>
+          <Text style={{fontSize: hp(2)}} className="mx-5 p-1 font-bold text-neutral-600">{activeCategory}</Text>
+        </View>
+
+        {/* 재료 리스트 (필터링 적용) */}
+        <View style={{flex: 1}}>
+          <ScrollView
+            style={{flex: 1}}
+            contentContainerStyle={styles.ingredientsWrap}
+            keyboardShouldPersistTaps="handled"
           >
-            <Text>+ 추가</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </View>
+            {filtered_i.map((item) => {
+                const isFromServer =
+                      myFridgeNames.includes(item) ||
+                      searchResults.some(r => (r.name || r.ingredientName) === item);
+                return (
+                  <TouchableOpacity
+                    key={item}
+                    onPress={() => addIngredient(item)}
+                    style={styles.button}
+                  >
+                    <Text style={isFromServer ? { fontWeight: 'bold' } : null}>
+                      {item}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            <TouchableOpacity
+              style={[styles.button, { backgroundColor: '#ddd' }]}
+              onPress={() => setModalVisible(true)}
+            >
+              <Text>+ 추가</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
 
-      {/* 선택된 재료 표시 */}
-      <View style={styles.selectedBox}>
-        <Text style={{ color: 'white', marginBottom: 5, textAlign: 'center', fontWeight: 'bold' }}>사용할 재료</Text>
-        <ScrollView horizontal keyboardShouldPersistTaps="handled">
-          {selectedIngredients.map((item) => (
-            <View key={item.name} style={styles.selectedChip}>
-              <Text>{item.name}</Text>
-              <TouchableOpacity onPress={() => removeIngredient(item.name)}>
-                <Text style={{ marginLeft: 5 }}>✕</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </ScrollView>
-      </View>
+        {/* 선택된 재료 표시 */}
+        <View style={[styles.selectedBox, { paddingBottom: 15 + Math.max(insets.bottom, 0), marginBottom: 10 }]}>
+          <Text style={{ color: 'white', marginBottom: 5, textAlign: 'center', fontWeight: 'bold' }}>사용할 재료</Text>
+          <ScrollView horizontal keyboardShouldPersistTaps="handled">
+            {selectedIngredients.map((item) => (
+              <View key={item.name} style={styles.selectedChip}>
+                <Text>{item.name}</Text>
+                <TouchableOpacity onPress={() => removeIngredient(item.name)}>
+                  <Text style={{ marginLeft: 5 }}>✕</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
 
-      {/* 모달 : 사용할 재료 표시 */}
-      <Modal visible={modalVisible} transparent animationType="slide">
-        <View style={styles.overlay}>
-          <View style={styles.modal}>
-            <Text style={styles.modalTitle}>재료 추가</Text>
-            <TextInput
-              placeholder="예: 계란"
-              value={customInput}
-              onChangeText={setCustomInput}
-              style={styles.modalInput}
-              returnKeyType="done"
-              onSubmitEditing={handleCustomAdd}
-            />
-            <View style={styles.modalButtons}>
-              <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Text>취소</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleCustomAdd}>
-                <Text>추가</Text>
-              </TouchableOpacity>
+        {/* 모달 : 사용할 재료 표시 */}
+        <Modal visible={modalVisible} transparent animationType="slide" presentationStyle='overFullScreen' statusBarTranslucent={true}>
+          <View style={[styles.overlay, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+            <View style={[styles.modal, { marginBottom: 8 }]}>
+              <Text style={styles.modalTitle}>재료 추가</Text>
+              <TextInput
+                placeholder="예: 계란"
+                value={customInput}
+                onChangeText={setCustomInput}
+                style={styles.modalInput}
+                returnKeyType="done"
+                onSubmitEditing={handleCustomAdd}
+              />
+              <View style={styles.modalButtons}>
+                <TouchableOpacity onPress={() => setModalVisible(false)}>
+                  <Text>취소</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={handleCustomAdd}>
+                  <Text>추가</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
 
-    </Animated.View>
+      </Animated.View>
+    </SafeAreaView>
   )
 }
 
@@ -336,7 +340,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   overlay: {
-    flex: 1, justifyContent: 'center',
+    flex: 1, justifyContent: 'flex-end', padding: 80,
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modal: {

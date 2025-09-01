@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ScrollView, StyleSheet, Alert, StatusBar } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import axios from 'axios';
 import { getAuthToken } from '../../AuthService';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
@@ -33,6 +34,8 @@ const getBitsFromToolList = (toolList) => {
 
 export default function SelectToolScreen({ route, navigation }) {
   const { userData } = route.params;
+  const insets = useSafeAreaInsets();
+
   const [selectedTools, setSelectedTools] = useState(userData.toolsList || []);
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('전체');
@@ -88,95 +91,97 @@ export default function SelectToolScreen({ route, navigation }) {
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar hidden={true} />
-      
-      {/* --- 헤더 UI 수정 --- */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={()=> navigation.goBack()} style={styles.headerButton}>
-          <ChevronLeftIcon  strokeWidth={4.5} color="#fbbf24" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleSave} style={styles.headerButton}>
-          <Text style={{fontSize: hp(2), color: '#fbbf24', fontWeight: 'bold'}}>저장</Text>
-        </TouchableOpacity>
-      </View>
-      
-      <View style={styles.titleContainer}>
-        <Text style={styles.title}>조리도구 선택</Text>
-      </View>
+    <SafeAreaView style={{flex:1}} edges={['bottom','left','right']}>
+      <View style={styles.container}>
+        <StatusBar hidden={true} />
+        
+        {/* --- 헤더 UI 수정 --- */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={()=> navigation.goBack()} style={styles.headerButton}>
+            <ChevronLeftIcon  strokeWidth={4.5} color="#fbbf24" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleSave} style={styles.headerButton}>
+            <Text style={{fontSize: hp(2), color: '#fbbf24', fontWeight: 'bold'}}>저장</Text>
+          </TouchableOpacity>
+        </View>
+        
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>조리도구 선택</Text>
+        </View>
 
-      {/* --- 검색창 UI 수정 --- */}
-      <View style={styles.searchWrapper}>
-        <View style={styles.searchBar}>
-          <TextInput
-            placeholder='조리도구 검색...'
-            placeholderTextColor={'gray'}
-            style={styles.searchInput}
-            value={search}
-            onChangeText={setSearch}
-            returnKeyType="search"
-          />
-          <View style={styles.searchIconContainer}>
-            <AntDesign name="search1" size={hp(2.5)} color="#ffab00"/>
+        {/* --- 검색창 UI 수정 --- */}
+        <View style={styles.searchWrapper}>
+          <View style={styles.searchBar}>
+            <TextInput
+              placeholder='조리도구 검색...'
+              placeholderTextColor={'gray'}
+              style={styles.searchInput}
+              value={search}
+              onChangeText={setSearch}
+              returnKeyType="search"
+            />
+            <View style={styles.searchIconContainer}>
+              <AntDesign name="search1" size={hp(2.5)} color="#ffab00"/>
+            </View>
           </View>
         </View>
-      </View>
 
-      {/* --- 카테고리 UI 수정 --- */}
-      <View style={styles.categoryContainer}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{paddingHorizontal: 15}}
-        >
-          {CATEGORIES.map((category)=>{
-            const isActive = category === activeCategory;
-            return (
-              <TouchableOpacity
-                key={category}
-                onPress={() => setActiveCategory(category)}
-                style={styles.categoryTouch}
-              >
-                <View style={[styles.categoryPill, isActive ? styles.activeCategoryPill : styles.inactiveCategoryPill]}>
-                  <Text style={styles.categoryText}>
-                    {category}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            )
-          })}
-        </ScrollView>
-      </View>
-      
-      <View style={styles.listTitleContainer}>
-        <Text style={styles.listTitle}>{activeCategory}</Text>
-      </View>
+        {/* --- 카테고리 UI 수정 --- */}
+        <View style={styles.categoryContainer}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{paddingHorizontal: 15}}
+          >
+            {CATEGORIES.map((category)=>{
+              const isActive = category === activeCategory;
+              return (
+                <TouchableOpacity
+                  key={category}
+                  onPress={() => setActiveCategory(category)}
+                  style={styles.categoryTouch}
+                >
+                  <View style={[styles.categoryPill, isActive ? styles.activeCategoryPill : styles.inactiveCategoryPill]}>
+                    <Text style={styles.categoryText}>
+                      {category}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              )
+            })}
+          </ScrollView>
+        </View>
+        
+        <View style={styles.listTitleContainer}>
+          <Text style={styles.listTitle}>{activeCategory}</Text>
+        </View>
 
-      {/* --- 목록 UI 수정 --- */}
-      <View style={styles.listContainer}>
-        <ScrollView
-          contentContainerStyle={styles.itemsContainer}
-          keyboardShouldPersistTaps="handled"
-        >
-          {renderTools()}
-        </ScrollView>
-      </View>
+        {/* --- 목록 UI 수정 --- */}
+        <View style={styles.listContainer}>
+          <ScrollView
+            contentContainerStyle={styles.itemsContainer}
+            keyboardShouldPersistTaps="handled"
+          >
+            {renderTools()}
+          </ScrollView>
+        </View>
 
-      {/* --- 하단 선택 목록 UI 수정 --- */}
-      <View style={styles.selectedBox}>
-        <Text style={styles.selectedBoxTitle}>나의 조리도구</Text>
-        <ScrollView horizontal keyboardShouldPersistTaps="handled">
-          {selectedTools.map(item => (
-            <View key={item} style={styles.selectedChip}>
-              <Text>{item}</Text>
-              <TouchableOpacity onPress={() => toggleTool(item)} style={{marginLeft: 5}}>
-                <Text>✕</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </ScrollView>
+        {/* --- 하단 선택 목록 UI 수정 --- */}
+        <View style={styles.selectedBox}>
+          <Text style={styles.selectedBoxTitle}>나의 조리도구</Text>
+          <ScrollView horizontal keyboardShouldPersistTaps="handled">
+            {selectedTools.map(item => (
+              <View key={item} style={styles.selectedChip}>
+                <Text>{item}</Text>
+                <TouchableOpacity onPress={() => toggleTool(item)} style={{marginLeft: 5}}>
+                  <Text>✕</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -281,7 +286,7 @@ const styles = StyleSheet.create({
         margin: 5,
     },
     selectedBox: {
-        backgroundColor: '#444',
+        backgroundColor: '#43794b',
         padding: 15,
         borderRadius: 20,
         marginVertical: 10,
