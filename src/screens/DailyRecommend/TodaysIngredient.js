@@ -104,26 +104,31 @@ export default function IngredientToday() {
               onPress={setTodayIng}
               style={{ padding: 8, borderRadius: 999, backgroundColor: 'rgba(0,0,0,0.1)', marginRight: 8 }}
             >
-              <Ionicons name="refresh" size={24} color="#fbbf24" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => navigation.navigate('Home')}
-              style={{ padding: 8, borderRadius: 999, backgroundColor: 'rgba(0,0,0,0.1)' }}
-            >
-              <FontAwesome name="home" size={24} color="#fbbf24" />
+              <Ionicons name="refresh" size={28} color="#fbbf24"/>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* 본문 → 텍스트 형식으로 출력 */}
+        {/* 본문 (text) */}
         <ScrollView contentContainerStyle={styles.content}>
           {ingredients.length > 0 ? (
-            ingredients.map((item, index) => (
-              <View key={`${item?.id ?? index}`} style={styles.textBox}>
-                <Text style={styles.name}>{item.title || item.name}</Text>
-                <Text style={styles.desc}>{item.description}</Text>
-              </View>
-            ))
+            ingredients.map((item, index) => {
+              const sentences = (item.description || '')
+                .split('.')
+                .map(s => s.trim())
+                .filter(Boolean)
+                // .map(s => `　${s}.`) // 들여쓰기 구현
+
+              return (
+                <View key={`${item?.id ?? index}`} style={styles.textBox}>
+                  <Text className="text-neutral-700" style={styles.name}>{item.title || item.name}</Text>
+                  <View style={styles.underline} />
+                  <Text style={styles.desc}>
+                    {sentences.join('\n')}
+                  </Text>
+                </View>
+              );
+            })
           ) : (
             <View style={{ alignItems: 'center', marginTop: hp(20) }}>
               <Text style={{ fontSize: hp(2), color: '#6b7280' }}>오늘의 식재료가 없습니다.</Text>
@@ -157,13 +162,32 @@ const styles = StyleSheet.create({
   textBox: {
     width: '100%',
     marginBottom: 20,
-    padding: 16,
+    padding: 1,
     borderRadius: 12,
-    backgroundColor: '#f9fafb',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    alignItems: 'center',
+    alignItems: 'flex-left',
   },
-  name: { fontSize: hp(2.2), fontWeight: 'bold', marginBottom: 8, textAlign: 'center' },
-  desc: { fontSize: hp(1.8), color: '#555', lineHeight: 22, textAlign: 'center' },
+  name: { 
+    fontSize: hp(3),
+    fontWeight: 'bold', 
+    marginBottom: 8, 
+    textAlign: 'left',
+    marginLeft: 5,
+  },
+  underline: {
+    width: 365,
+    height: 3.5,
+    backgroundColor: '#fbbf24', // Tailwind의 yellow-400
+    marginBottom: 15,
+    marginTop: 2,
+    marginLeft: 3,
+  },
+  desc: { 
+    fontSize: hp(1.9), 
+    color: '#555', 
+    fontWeight: '500', 
+    lineHeight: 28,
+    textAlign: 'left',
+    width: '98%',
+    marginLeft: 5,
+  },
 });

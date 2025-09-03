@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { View, TextInput, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as KakaoLogins from '@react-native-seoul/kakao-login';
 
 const API_BASE_URL = 'http://43.200.200.161:8080';
 
@@ -14,30 +13,6 @@ const SignupScreen = ({ navigation }) => {
 
   const validateName = (text) => /^[가-힣]+$/.test(text);
   const validateBirth = (text) => /^\d{8}$/.test(text);
-
-  const handleKakaoLogin = async () => {
-    try {
-      const kakaoToken = await KakaoLogins.login();
-      
-      const response = await fetch(`${API_BASE_URL}/api/auth/kakao`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken: kakaoToken.accessToken }),
-      });
-
-      if (response.ok) {
-        const appData = await response.json();
-        await AsyncStorage.setItem('accessToken', appData.accessToken);
-        Alert.alert('로그인 성공', '홈 화면으로 이동합니다.');
-        navigation.replace('Home');
-      } else {
-        throw new Error('서버에서 카카오 인증에 실패했습니다.');
-      }
-    } catch (err) {
-      console.error('카카오 로그인 실패:', err);
-      Alert.alert('카카오 로그인 실패', '로그인 처리 중 오류가 발생했습니다.');
-    }
-  };
 
   const handleSignup = async () => {
     if (!name || !birth || !password || !id) {
@@ -121,9 +96,6 @@ const SignupScreen = ({ navigation }) => {
         <Text style={styles.buttonText}>회원가입</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.kakaoButton} onPress={handleKakaoLogin}>
-        <Text style={styles.kakaoText}>카카오로 시작하기</Text>
-      </TouchableOpacity>
     </View>
   );
 };

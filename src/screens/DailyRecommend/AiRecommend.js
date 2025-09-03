@@ -144,12 +144,10 @@ export default function AiRecommend() {
             <ChevronLeftIcon size={hp(3.5)} strokeWidth={4.5} color="#fbbf24" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>오늘의 추천 레시피</Text>
+          {/* 새로고침 버튼 */}
           <View style={{ flexDirection: 'row' }}>
             <TouchableOpacity onPress={setTodayMeal} className="p-2 rounded-full bg-black/10 mr-2">
-              <Ionicons name="refresh" size={24} color="#fbbf24" />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('Home')} className="p-2 rounded-full bg-black/10">
-              <FontAwesome name="home" size={24} color="#fbbf24" />
+              <Ionicons name="refresh" size={28} color="#fbbf24" />
             </TouchableOpacity>
           </View>
         </View>
@@ -206,7 +204,7 @@ export default function AiRecommend() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: hp(7), paddingBottom: hp(2), paddingHorizontal: wp(4), backgroundColor: '#f9fafb', borderBottomWidth: 1, borderColor: '#e5e7eb' },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: hp(7), paddingBottom: hp(2), paddingHorizontal: wp(4), backgroundColor: '#f9fafb', borderBottomWidth: 1, borderColor: '#e5e7eb', marginBottom: 10 },
   headerTitle: { fontSize: hp(2.5), fontWeight: 'bold' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, paddingBottom: 40 },

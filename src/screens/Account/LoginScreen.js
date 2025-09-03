@@ -10,13 +10,13 @@ import qs from 'qs';
 const API_BASE_URL = 'http://43.200.200.161:8080';
 
 // Kakao OAuth 설정
-const REACT_APP_CLIENT_ID = '906c108fa252d61e18b923f34f00cb5b';
-// ⚠️ Kakao Developers 콘솔에 "정확히" 이 주소를 Redirect URI로 등록해야 합니다.
+const REACT_APP_CLIENT_ID = '각자의 REST KEY 입력';
+// Kakao Developers 콘솔상의 Redirect URI
 const REACT_APP_REDIRECT_URI = 'http://43.200.200.161:8080/api/kakao';
 
 // 카카오 토큰 엔드포인트 (교환 포맷 고정)
 const KAKAO_TOKEN_URL = 'https://kauth.kakao.com/oauth/token';
-// (선택) 콘솔에서 Client Secret 사용 중이면 채워넣으세요. 아니면 빈 문자열 유지.
+// (선택) 콘솔에서 Client Secret 사용 중이면 채워넣거나 빈 문자열 유지
 const KAKAO_CLIENT_SECRET = '';
 
 // 로그인 화면에서 열 WebView용 카카오 인증 URL
@@ -102,7 +102,7 @@ const LoginScreen = ({ navigation }) => {
     const form = qs.stringify({
       grant_type: 'authorization_code',
       client_id: REACT_APP_CLIENT_ID,       // 반드시 REST API 키
-      redirect_uri: REACT_APP_REDIRECT_URI, // 인가 요청 때와 "완전히 동일"
+      redirect_uri: REACT_APP_REDIRECT_URI, // Redirect key
       code,                                 // 방금 받은 새 코드
       ...(KAKAO_CLIENT_SECRET ? { client_secret: KAKAO_CLIENT_SECRET } : {}),
     });
@@ -114,14 +114,14 @@ const LoginScreen = ({ navigation }) => {
     return resp.data; // { access_token, refresh_token, token_type, expires_in, ... }
   };
 
-  // (핵심) 카카오 토큰 교환 후 → 우리 서버 로그인
+    // 카카오 토큰 교환 후 → 우리 서버 로그인
   const loginWithKakaoAccessToken = async (kakaoAccessToken) => {
     // 1) 앞뒤 공백/개행 제거로 "토큰 잘림/이상문자" 예방
     const token = (kakaoAccessToken ?? '').trim();
     if (!token) throw new Error('kakaoAccessToken is empty');
 
     // 2) 길이/앞·뒤 일부만 찍어 실제로 바뀌는지 검증(개인정보 노출 방지)
-    console.log('[Kakao] token len / head / tail:', token.length, token.slice(0, 12), token.slice(-6));
+    //console.log('[Kakao] token len / head / tail:', token.length, token.slice(0, 12), token.slice(-6));
 
     // 3) 서버로 전달: Authorization 헤더 사용 안 함(보안필터 오인 방지)
     //    커스텀 헤더 + JSON 바디로 동시에 전달
@@ -151,7 +151,7 @@ const LoginScreen = ({ navigation }) => {
         throw new Error(`카카오 토큰 교환 실패: ${JSON.stringify(tk)}`);
       }
 
-      // ✅ 토큰 유효성 즉시 확인
+      // 토큰 유효성 즉시 확인
       try {
         const me = await axios.get('https://kapi.kakao.com/v2/user/me', {
           headers: { Authorization: `Bearer ${tk.access_token}` },
@@ -237,7 +237,7 @@ const LoginScreen = ({ navigation }) => {
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.kakaoButton} onPress={handleKakaoLogin}>
-        <Text style={styles.kakaoText}>카카오 계정으로 로그인</Text>
+        <Text style={styles.kakaoText}>카카오 계정으로 가입 및 로그인</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate('SignupScreen')}>

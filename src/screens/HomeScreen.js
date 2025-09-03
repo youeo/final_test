@@ -2,6 +2,7 @@ import { View, Text, ScrollView, Image, StatusBar, TouchableOpacity, Pressable, 
 import React, { useEffect, useState } from 'react';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { UserCircleIcon } from 'react-native-heroicons/solid';
@@ -69,22 +70,24 @@ export default function HomeScreen() {
       <StatusBar backgroundColor="#e8e9eb" barStyle="dark-content" />
 
       {/* 상단바 */}
-      <View
-        style={{ height: 60, borderBottomWidth: 4, borderBottomColor: '#f2ca38' }}
-        className="flex-row justify-between items-center mb-2 top-8 bottom-2 pb-2 pt-2 bg-black/10"
-      >
-        <Image
-          source={require('../../assets/images/recipppe.png')}
-          style={{ marginLeft: 25, height: hp(3.2), width: hp(8.3) }}
-        />
-        <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
-          <UserCircleIcon size={hp(5.5)} color="#ffab00"
-            style={{
-              marginRight: 16,
-            }}
+      <SafeAreaView edges={['top']} style={{ backgroundColor: '#e8e8e8' }}>
+        <View
+          style={{ height: 60, borderBottomWidth: 4, borderBottomColor: '#f2ca38', paddingHorizontal: 16, }}
+          className="flex-row justify-between items-center bg-black/10"
+        >
+          <Image
+            source={require('../../assets/images/RecipEat.png')}
+            style={{ marginLeft: 10, marginTop: 4, height: hp(3.1), width: hp(13.8) }}
           />
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
+            <UserCircleIcon size={hp(5.3)} color="#43794b"
+              style={{
+                marginRight: 10,
+              }}
+            />
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
 
       <View style={styles.body}>
 
@@ -146,7 +149,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 4,
     marginRight: 4,
-    marginTop: 50,
+    marginTop: 15,
     paddingTop: 8,
     paddingHorizontal: 16,
   },

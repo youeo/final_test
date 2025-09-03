@@ -34,11 +34,15 @@ export default function WelcomeScreen() {
 
       {/* title and punchline */}
       <View className="flex items-center space-y-2">
-        <Text style={{fontSize: hp(7)}} className="font-bold text-white tracking-widest">
-            AI Recipe
-        </Text>
+        <Image
+                    source={require('../../assets/images/RecipEat.png')}
+                    style={{marginBottom: 10, height: hp(7), width: hp(30.8) }}
+                  />
+        {/* <Text style={{fontSize: hp(7)}} className="font-bold text-white tracking-widest">
+            RecipEat
+        </Text> */}
         <Text style={{fontSize: hp(2)}} className="font-medium text-white tracking-widest">
-            냉장고를 비워보자!
+            AI와 함께 냉장고를 비워보자!
         </Text>
       </View>
     </View>

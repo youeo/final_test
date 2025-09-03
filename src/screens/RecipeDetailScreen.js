@@ -322,16 +322,16 @@ export default function RecipeDetailScreen(props) {
         <View
           style={{
             width: wp(98), height: hp(10), borderRadius: 53, borderBottomLeftRadius: 40, borderBottomRightRadius: 40,
-            marginTop: 4, backgroundColor: '#ffffff' // 연한 회색 (빈칸 티나게)
+            marginTop: 4, backgroundColor: '#ffffff'
           }}
         />
       </View>
 
       <Animated.View entering={FadeIn.delay(200).duration(1000)} className="w-full absolute flex-row justify-between items-center pt-14">
-        <TouchableOpacity onPress={() => navigation.goBack()} className="p-2 rounded-full ml-5 bg-gr">
+        <TouchableOpacity onPress={() => navigation.goBack()} className="p-2 rounded-full ml-5 bg-black/10">
           <ChevronLeftIcon size={hp(3.5)} strokeWidth={4.5} color="#fbbf24" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={toggleLike} disabled={liking} className="p-2 rounded-full mr-5 bg-gr">
+        <TouchableOpacity onPress={toggleLike} disabled={liking} className="p-2 rounded-full mr-5 bg-black/10">
           <HeartIcon size={hp(3.5)} strokeWidth={4.5} color={isFavourite ? "red" : "gray"} />
         </TouchableOpacity>
       </Animated.View>
