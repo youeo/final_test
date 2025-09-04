@@ -68,7 +68,7 @@ export default function Select_mainScreen() {
               }}
               className="pt-1.5 pb-2.5 px-2 rounded-full mr-5 bg-black/10 items-center justify-center"
             >
-              <Text style={{fontSize: hp(3)}} className='text-ye font-semibold'>완료</Text>
+              <Text style={{fontSize: hp(2.7)}} className='text-ye font-semibold'>완료</Text>
             </TouchableOpacity>
         </Animated.View>
 

@@ -328,7 +328,7 @@ const MyRecipe = () => {
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#fff' },
+    container: { flex: 1 },
     header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: hp(7), paddingBottom: hp(2), backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
     headerButton: { backgroundColor: '#f3f4f6', padding: 8, borderRadius: 999 },
     headerTitle: { fontSize: hp(2.2), fontWeight: 'bold' },
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
     modalContent: { backgroundColor: 'white', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, paddingBottom: 40 },
     modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
     sortOption: { paddingVertical: 16, alignItems: 'center' },
-    sortOptionText: { fontSize: 16 },
+    sortOptionText: { fontSize: 16},
 });
 
 export default MyRecipe;

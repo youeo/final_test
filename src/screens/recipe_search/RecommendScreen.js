@@ -231,14 +231,14 @@ export default function RecommendScreen() {
                 onPress={() => { setSortKey('alpha'); setSortOpen(false); }}
               >
                 <Text style={[styles.sortOptionText, sortKey === 'alpha' && styles.selectedSortOptionText]}>가나다순</Text>
-                {sortKey === 'alpha' && <Ionicons name="checkmark" size={20} color="#007AFF" />}
+                {sortKey === 'alpha' && <Ionicons name="checkmark" size={20} color="#43794b" />}
               </TouchableOpacity>
               <TouchableOpacity 
                 style={[styles.sortOption, sortKey === 'time' && styles.selectedSortOption]}
                 onPress={() => { setSortKey('time'); setSortOpen(false); }}
               >
                 <Text style={[styles.sortOptionText, sortKey === 'time' && styles.selectedSortOptionText]}>조리시간순</Text>
-                {sortKey === 'time' && <Ionicons name="checkmark" size={20} color="#007AFF" />}
+                {sortKey === 'time' && <Ionicons name="checkmark" size={20} color="#43794b" />}
               </TouchableOpacity>
             </View>
           </TouchableOpacity>
@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
     color: '#333' 
   },
   selectedSortOptionText: {
-    color: '#007AFF', 
+    color: '#43794b', 
     fontWeight: '500' 
   },
 });

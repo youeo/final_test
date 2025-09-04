@@ -146,7 +146,7 @@ export default function SelectIngredientsScreen({ route, navigation }) {
             <ChevronLeftIcon  strokeWidth={4.5} color="#fbbf24" />
           </TouchableOpacity>
           <TouchableOpacity onPress={handleSave} style={styles.headerButton}>
-            <Text style={{fontSize: hp(2), color: '#fbbf24', fontWeight: 'bold'}}>저장</Text>
+            <Text style={{fontSize: hp(2.5), color: '#fbbf24', fontWeight: 'bold'}}>저장</Text>
           </TouchableOpacity>
         </View>
         

@@ -66,7 +66,7 @@ export default function HomeScreen() {
   );
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1">
       <StatusBar backgroundColor="#e8e9eb" barStyle="dark-content" />
 
       {/* 상단바 */}

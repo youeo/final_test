@@ -163,7 +163,7 @@ export default function Select_ingreScreen() {
             <ChevronLeftIcon size={hp(3.5)} strokeWidth={5} color="#fbbf24" />
           </TouchableOpacity>
           <TouchableOpacity onPress={()=> navigation.navigate('Select_main', {selectedIngredients, Type,})} className="pt-1.5 pb-2.5 px-2 rounded-full mr-5 bg-black/10 items-center justify-center">
-            <Text style={{fontSize: hp(3)}} className='text-ye font-semibold'>완료</Text>
+            <Text style={{fontSize: hp(2.7)}} className='text-ye font-semibold'>완료</Text>
           </TouchableOpacity>
         </Animated.View>
 
@@ -262,7 +262,7 @@ export default function Select_ingreScreen() {
         </View>
 
         {/* 선택된 재료 표시 */}
-        <View style={[styles.selectedBox, { paddingBottom: 15 + Math.max(insets.bottom, 0), marginBottom: 10 }]}>
+        <View style={[styles.selectedBox, { marginBottom: 10 }]}>
           <Text style={{ color: 'white', marginBottom: 5, textAlign: 'center', fontWeight: 'bold' }}>사용할 재료</Text>
           <ScrollView horizontal keyboardShouldPersistTaps="handled">
             {selectedIngredients.map((item) => (
@@ -324,9 +324,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#43794b',
     padding: 15,
     borderRadius: 20,
-    marginTop: 4,
-    marginBottom: 10,
-    marginHorizontal: 12
+    marginHorizontal: 12,
   },
   selectedChip: {
     backgroundColor: '#d9d9d9',
@@ -336,8 +334,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginRight: 10,
-    marginTop: 10,
-    marginBottom: 10,
+    marginVertical: 5,
   },
   overlay: {
     flex: 1, justifyContent: 'flex-end', padding: 80,
